@@ -20,21 +20,30 @@ class LocationManagerActor(val x:Int, val y:Int) extends Actor{
   val locationStates = mdArray.flatten.map{(_, new LocationState)}.toMap
   var actorsToActors = collection.mutable.Map.empty[ActorRef, ActorRef]
     
-  def circleMembers(x1:Int, y1:Int, radius:Int): (Set[ActorRef], Set[ActorRef]) = {    
-    var locations = collection.mutable.Set.empty[ActorRef]
-    var actors = collection.mutable.Set.empty[ActorRef]
+  def circleMembers(x1:Int, y1:Int, radius:Int): (Map[ActorRef, Int], Map[ActorRef, Int]) = {    
+    var locations = collection.mutable.Map.empty[ActorRef, Int]
+    var actors = collection.mutable.Map.empty[ActorRef, Int]
+    
+    val rSquared = radius.^(2)
+    
     
     for(i <- (x1-radius to x1+radius)) {
       for(j <- (y1-radius to y1+radius)) {
-        if((i-radius >= 0 && i+radius <= x)  //x in range
-           && (j-radius >= 0 && j+radius <= y ) //y in range
-           && (i-x*i-x) + (j-y*j-y) <= (radius*radius)){   //array value in radius
-          locations+=mdArray(i)(j)
-          actors++=locationStates(mdArray(i)(j)).currentResidents
+        if((i-radius >= 0 && i+radius <= x)  && (j-radius >= 0 && j+radius <= y )){ //x and y in range
+          val xDist = i-x
+          val yDist = j-y
+          val xDistSquared =  xDist.^(2)
+          val yDistSquared =  yDist.^(2)
+          val xyDistSquared = xDistSquared + yDistSquared
+          if (xyDistSquared <= rSquared){   //array value in radius
+            val distance = Math.sqrt(xyDistSquared).floor.toInt
+            locations(mdArray(i)(j)) =  distance            
+            actors++= locationStates(mdArray(i)(j)).currentResidents.map{res => (res,distance)}
+          }
         }
       }
     }
-    return (locations.toSet,actors.toSet)
+    return (locations.toMap,actors.toMap)
   }
 
   def printLine = println(" -"+"-"*y)

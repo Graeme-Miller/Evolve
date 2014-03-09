@@ -13,7 +13,7 @@ class AnimalActor(val locationManagerActor: ActorRef) extends Actor {
   
   def receive = {
     case Tick => locationManagerActor!GetSouroundingRequest(1)
-    case GetSouroundingResponse(location: Set[ActorRef], actors: Set[ActorRef]) => {
+    case GetSouroundingResponse(location: Map[ActorRef, Int], actors: Map[ActorRef, Int]) => {
         val nextInt = r.nextInt(location.size)
         
         sender!RegisterAtActorLocation(location.toList(nextInt)) //r.shuffle(location).head

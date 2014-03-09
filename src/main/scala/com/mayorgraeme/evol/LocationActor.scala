@@ -1,5 +1,5 @@
 
-package com.mayorgraeme.evolution
+package com.mayorgraeme.evol
 
 import akka.actor.Actor
 import scala.util.Random

@@ -1,14 +1,14 @@
 
-package com.mayorgraeme.evolution
+package com.mayorgraeme.evol
 
 import akka.actor.Actor
 import akka.actor.ActorRef
 import akka.actor.Props
 
-import org.jgrapht.Graph
+//import org.jgrapht.Graph
 
 class LocationManagerActor(val x:Int, val y:Int) extends Actor{    
- var graph:Subgraph
+ //var graph:Subgraph
   
   val mdArray = Array.fill(x, y)(context.actorOf(Props[LocationActor]))  
   

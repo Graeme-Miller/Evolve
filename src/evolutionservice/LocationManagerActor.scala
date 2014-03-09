@@ -5,7 +5,10 @@ import akka.actor.Actor
 import akka.actor.ActorRef
 import akka.actor.Props
 
+import org.jgrapht.Graph
+
 class LocationManagerActor(val x:Int, val y:Int) extends Actor{    
+ var graph:Subgraph
   
   val mdArray = Array.fill(x, y)(context.actorOf(Props[LocationActor]))  
   
@@ -63,6 +66,10 @@ class LocationManagerActor(val x:Int, val y:Int) extends Actor{
   }
   
   def receive = {
+    case  MoveTowardActor(actor:ActorRef) => {
+       // GridGraphGenerator.
+      }
+    
     case RegisterAtActorLocation(location:ActorRef) => {
         move(location, sender)
       }

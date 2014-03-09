@@ -16,7 +16,7 @@ class AnimalActor(val locationManagerActor: ActorRef) extends Actor {
     case GetSouroundingResponse(location: Map[ActorRef, Int], actors: Map[ActorRef, Int]) => {
         val nextInt = r.nextInt(location.size)
         
-        sender!RegisterAtActorLocation(location.toList(nextInt)) //r.shuffle(location).head
+        sender!RegisterAtActorLocation(location.keys.toList(nextInt))
       }
     
     case _ => println("received unknown message")

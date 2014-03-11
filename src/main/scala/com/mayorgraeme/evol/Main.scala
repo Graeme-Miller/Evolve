@@ -15,10 +15,10 @@ object Main {
   def main(args: Array[String]): Unit = {       
     val system = ActorSystem("EvolutionService");
     val locationManagerActor = system.actorOf(Props(new LocationManagerActor(20,50)))       
-    val testActors = Array.fill(5)(system.actorOf(Props(new AnimalActor(locationManagerActor))))
+    val testActors = Array.fill(90)(system.actorOf(Props(new AnimalActor(locationManagerActor))))
     
     system.scheduler.schedule(0 milliseconds,
-                              1 seconds)
+                              0.1 seconds)
     {locationManagerActor!Tick; testActors.foreach(_!Tick) }
       
  

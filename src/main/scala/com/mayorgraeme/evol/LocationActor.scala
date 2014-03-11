@@ -14,4 +14,8 @@ class LocationActor extends Actor{
           case 1 => '|'}}  
     case _ => println("Received unknown message")
   }
+  
+  override def toString = {
+    super.toString + " location"
+  }
 }

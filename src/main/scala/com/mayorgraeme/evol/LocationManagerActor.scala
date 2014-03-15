@@ -162,6 +162,9 @@ class LocationManagerActor(val x:Int, val y:Int, val noActors:Int) extends Actor
         context.stop(sender)
         //sender!Kill
       }
+    case TheMiracleOfChildBirth => {
+        testActors += (context.actorOf(Props(new BasicAnimalActor)))
+    }
     case RegisterAtRandomLoc => {
         val loc = mdArray(r.nextInt(x))(r.nextInt(y))
         move(loc, sender)
@@ -193,7 +196,7 @@ class LocationManagerActor(val x:Int, val y:Int, val noActors:Int) extends Actor
             array.foreach{actor => {
                 if(!locationStates(actor).currentResidents.isEmpty){
                   //print(locationStates(actor).currentResidents.head)
-                  print(math.floor((locationStates(actor).currentResidents.size/10)).toInt)
+                  print(math.floor((locationStates(actor).currentResidents.size)).toInt)
                 }else {
                   locationStates.get(actor) match {
                     case Some(i) => print(i.currentState)

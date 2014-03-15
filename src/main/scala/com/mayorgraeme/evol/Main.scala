@@ -14,7 +14,7 @@ object Main {
   
   def main(args: Array[String]): Unit = {       
     val system = ActorSystem("EvolutionService");
-    val locationManagerActor = system.actorOf(Props(new LocationManagerActor(25,100, 1)))       
+    val locationManagerActor = system.actorOf(Props(new LocationManagerActor(10,25, 2)))       
     
     
     system.scheduler.schedule(0 milliseconds,

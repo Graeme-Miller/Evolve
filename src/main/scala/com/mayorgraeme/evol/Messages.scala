@@ -32,6 +32,8 @@ case class YesImWater
 //Animal animal messages
 case class WannaFuck(actorType: Char)
 case class HellYesIWannaFuck
+case class Penetrate
 
+case class TheMiracleOfChildBirth
 
 case class Tick

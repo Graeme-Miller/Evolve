@@ -25,6 +25,10 @@ class BasicAnimalActor extends Actor {
     case 0 => 'M'
     case _ => 'F'
   }
+  
+  var pregnant = false
+  var pregnancyCountdown = 0
+  val gestation = 40
 
   def degradeCollection(col: Map[ActorRef, Int]): Map[ActorRef, Int] = {
     col.view.map(x=>(x._1, x._2 -1)).filter(_._2 != 0).toMap
@@ -35,7 +39,7 @@ class BasicAnimalActor extends Actor {
     thirst = Math.max(thirst - r.nextInt(5), 0)
     sex = Math.min(sex + r.nextInt(5), 100)
     
-    println("hunger(" +hunger+") thirst(" +thirst+") sex(" +sex+") food size("+food.size+") water size("+water.size+") fuckBuddies size("+fuckBuddies.size+") age("+currentAge+"/"+maxAge+")")
+    println("gender ("+gender+") pregnant("+pregnant+") pregnancyCountdown("+pregnancyCountdown+") hunger(" +hunger+") thirst(" +thirst+") sex(" +sex+") food size("+food.size+") water size("+water.size+") fuckBuddies size("+fuckBuddies.size+") age("+currentAge+"/"+maxAge+")")
     
     if(hunger == 0 || thirst  == 0){
       println("DIE DIE DIE")
@@ -103,6 +107,9 @@ class BasicAnimalActor extends Actor {
         
         if (currentAge >= maxAge) {
           sender ! Die
+        }else if(pregnant && pregnancyCountdown <= 0){
+          pregnant = false
+          sender!TheMiracleOfChildBirth
         }else if(hunger < 50 || thirst < 50){
           if(hunger < thirst){            
             val actor = getClosestActor(location, food)            
@@ -111,10 +118,14 @@ class BasicAnimalActor extends Actor {
             val actor = getClosestActor(location, water)            
             checkActorMoveOrDo(actor, sender, () => {thirst += r.nextInt(50)}, () => randLoc(location))
           }
-//        }else if (sex > 80){
-//          println("SEXY")
-//          val actor = getClosestActor(actors, fuckBuddies)
-//          checkActorMoveOrDo(actor, sender, () => {sex = 0})
+        }else if (sex > 80){          
+          val actor = getClosestActor(actors, fuckBuddies)
+          checkActorMoveOrDo(actor, sender, () => {
+              if(gender == 'M'){
+                actor.get._1!Penetrate
+                sex = 0
+              }
+            }, () => randLoc(location))
         }else{
           randLoc(location)
         }
@@ -127,6 +138,19 @@ class BasicAnimalActor extends Actor {
       }
     case HellYesIWannaFuck => {
         fuckBuddies += ((sender, 5))
+      }
+    case WannaFuck(x) =>{
+        if (x != gender  && !pregnant && sex > 80){
+          sender!HellYesIWannaFuck
+        }
+      }
+    
+    case Penetrate => {
+        if(gender == 'F'){
+          pregnant = false
+          pregnancyCountdown = gestation
+          sex = 0        
+        }
       }
     case _ => println("received unknown message")
   }  

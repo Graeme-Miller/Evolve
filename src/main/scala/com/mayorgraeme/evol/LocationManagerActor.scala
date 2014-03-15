@@ -20,7 +20,7 @@ class LocationManagerActor(val x:Int, val y:Int, val noActors:Int) extends Actor
   
   //Create child actors
   var testActors = collection.mutable.Set.empty[ActorRef]
-  (0 to noActors).foreach(x => testActors += (context.actorOf(Props(new BasicAnimalActor))))
+  (1 to noActors).foreach(x => testActors += (context.actorOf(Props(new BasicAnimalActor))))
   testActors.foreach(_!Startup)
   
   val mdArray = Array.fill(x, y)(context.actorOf(Props[LocationActor]))  

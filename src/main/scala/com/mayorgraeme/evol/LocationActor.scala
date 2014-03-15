@@ -16,12 +16,12 @@ class LocationActor extends Actor{
   def receive = {
     case StatusRequest => sender!StatusResponse(loctype)
   
-    case areYouFood => {
+    case AreYouFood => {
         if(loctype == '*'){
           sender!YesImFood
         }
       }
-    case areYouWater =>{
+    case AreYouWater =>{
         if(loctype == '~'){
           sender!YesImWater
         }

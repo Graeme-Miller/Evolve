@@ -7,7 +7,7 @@ import scala.util.Random
 class LocationActor extends Actor{
   
   val r = new Random()
-  val loctype = hashCode.abs%70 match{
+  val loctype = hashCode.abs%5 match{
     case 0 => '*'
     case 1 => '~'
     case _ => ' '

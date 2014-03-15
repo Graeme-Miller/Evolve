@@ -18,7 +18,7 @@ class BasicAnimalActor extends Actor {
   var water = Map.empty[ActorRef, Int]
   var fuckBuddies = Map.empty[ActorRef, Int]
   
-  val maxAge = 100 + r.nextInt(50)
+  val maxAge = 150 + r.nextInt(50)
   var currentAge = 0
     
   val gender = r.nextInt(2) match {
@@ -28,7 +28,7 @@ class BasicAnimalActor extends Actor {
   
   var pregnant = false
   var pregnancyCountdown = 0
-  val gestation = 40
+  val gestation = 20
 
   def degradeCollection(col: Map[ActorRef, Int]): Map[ActorRef, Int] = {
     col.view.map(x=>(x._1, x._2 -1)).filter(_._2 != 0).toMap
@@ -37,7 +37,9 @@ class BasicAnimalActor extends Actor {
   def stateUpdate(sender: ActorRef) = {
     hunger = Math.max(hunger - r.nextInt(5), 0)
     thirst = Math.max(thirst - r.nextInt(5), 0)
-    sex = Math.min(sex + r.nextInt(5), 100)
+    if(!pregnant){
+      sex = Math.min(sex + r.nextInt(5), 100)
+    }
     
     println("gender ("+gender+") pregnant("+pregnant+") pregnancyCountdown("+pregnancyCountdown+") hunger(" +hunger+") thirst(" +thirst+") sex(" +sex+") food size("+food.size+") water size("+water.size+") fuckBuddies size("+fuckBuddies.size+") age("+currentAge+"/"+maxAge+")")
     
@@ -99,6 +101,10 @@ class BasicAnimalActor extends Actor {
     case Startup => sender!RegisterAtRandomLoc
     case Tick => {stateUpdate(sender); sender!GetSouroundingRequest(10);}
     case GetSouroundingResponse(location: Map[ActorRef, Int], actors: Map[ActorRef, Int]) => {
+        if(pregnant){
+          pregnancyCountdown = pregnancyCountdown - 1
+        }
+        
         searchFood(location)
         searchWater(location)
         serachForFuckBuddies(actors)
@@ -147,7 +153,7 @@ class BasicAnimalActor extends Actor {
     
     case Penetrate => {
         if(gender == 'F'){
-          pregnant = false
+          pregnant = true
           pregnancyCountdown = gestation
           sex = 0        
         }

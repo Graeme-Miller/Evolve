@@ -20,8 +20,7 @@ class LocationManagerActor(val x:Int, val y:Int, val noActors:Int) extends Actor
   
   //Create child actors
   var testActors = collection.mutable.Set.empty[ActorRef]
-  (1 to noActors).foreach(x => testActors += (context.actorOf(Props(new BasicAnimalActor))))
-  testActors.foreach(_!Startup)
+  (1 to noActors).foreach(x => testActors += createAnimal)
   
   val mdArray = Array.fill(x, y)(context.actorOf(Props[LocationActor]))  
   
@@ -63,6 +62,12 @@ class LocationManagerActor(val x:Int, val y:Int, val noActors:Int) extends Actor
   
   val locationStates = mdArray.flatten.map{(_, new LocationState)}.toMap
   var actorsToActors = collection.mutable.Map.empty[ActorRef, ActorRef]
+  
+  def createAnimal: ActorRef = {
+    val actor = context.actorOf(Props(new BasicAnimalActor))
+    actor!Startup
+    actor
+  }
     
   def circleMembers(x1:Int, y1:Int, radius:Int, exclude: ActorRef): (Map[ActorRef, Int], Map[ActorRef, Int]) = {    
     // println(x1+" "+y1+" "+radius)
@@ -126,36 +131,43 @@ class LocationManagerActor(val x:Int, val y:Int, val noActors:Int) extends Actor
     }
   }
   
+  def pathAndMove(from: ActorRef, to: ActorRef, actor: ActorRef){
+//  println("from loc "+xyArray(i))
+//  println("to loc   "+xyArray(j))
+    val path = DijkstraShortestPath.findPathBetween(graph.asInstanceOf[Graph[Serializable,DefaultEdge]], from, to).filter(x => xyArray(graph.getEdgeTarget(x)) != xyArray(from))                  
+                  
+//  path.foreach(i => {print(xyArray(graph.getEdgeTarget(i)))}) 
+//  println
+                  
+    if(!path.isEmpty){                                                         
+//    path.foreach(i => {print(xyArray(graph.getEdgeTarget(i)))}) 
+//    println                    
+      move(graph.getEdgeTarget(path(0)), sender);
+    }
+  }
+  
   def receive = {
     case  MoveTowardActor(actor:ActorRef) => {    
         //println("MOVE TOWARD ACTOR "+xyArray(actor))
-        val fromlocation = actorsToActors.get(sender)
-        val toLocation = Option(actor) //actorsToActors.get(actor)
+        val fromlocation = actorsToActors.get(sender)        
+        val toLocation: ActorRef = actorsToActors.get(actor) match { 
+          case Some(x) => x
+          case None => {
+              actor
+            }
+        }      
+        
         fromlocation match {
-          case Some(i) => toLocation match {
-              case Some(j) => {
-//                  println("from loc "+xyArray(i))
-//                  println("to loc   "+xyArray(j))
-                  val path = DijkstraShortestPath.findPathBetween(graph.asInstanceOf[Graph[Serializable,DefaultEdge]], i, j).filter(x => xyArray(graph.getEdgeTarget(x)) != xyArray(i))                  
-                  
-//                  path.foreach(i => {print(xyArray(graph.getEdgeTarget(i)))}) 
-//                  println
-                  
-                  if(!path.isEmpty){
-                                                         
-//                    path.foreach(i => {print(xyArray(graph.getEdgeTarget(i)))}) 
-//                    println
-                    
-                    move(graph.getEdgeTarget(path(0)), sender);
-
-                    //          println("G "+ " to "+xyArray(vertex))
-                    
-                  }
-                }
-              case None => Unit
-            } case None => Unit
-        }        
-      }
+          case Some(i) => 
+            pathAndMove(i,
+                        toLocation, 
+                        sender)
+          case None => Unit
+        }
+        
+      } 
+        
+  
     case Die => {
         leaveLocation(sender)
         testActors.remove(sender)
@@ -163,8 +175,8 @@ class LocationManagerActor(val x:Int, val y:Int, val noActors:Int) extends Actor
         //sender!Kill
       }
     case TheMiracleOfChildBirth => {
-        testActors += (context.actorOf(Props(new BasicAnimalActor)))
-    }
+        testActors += createAnimal
+      }
     case RegisterAtRandomLoc => {
         val loc = mdArray(r.nextInt(x))(r.nextInt(y))
         move(loc, sender)

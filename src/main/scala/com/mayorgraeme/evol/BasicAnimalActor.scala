@@ -1,0 +1,125 @@
+
+package com.mayorgraeme.evol
+
+import akka.actor.Actor
+import akka.actor.ActorRef
+import scala.util.Random
+
+import scala.util.Sorting._
+
+class BasicAnimalActor extends Actor {
+  val r = new Random()
+  
+  var hunger = 40//80 + r.nextInt(20)
+  var thirst = 80 + r.nextInt(20)
+  var sex = r.nextInt(100)
+
+  var food = Map.empty[ActorRef, Int]
+  var water = Map.empty[ActorRef, Int]
+  var fuckBuddies = Map.empty[ActorRef, Int]
+    
+  
+
+  def degradeCollection(col: Map[ActorRef, Int]): Map[ActorRef, Int] = {
+    col.view.map(x=>(x._1, x._2 -1)).filter(_._2 != 0).toMap
+  }
+  
+  def stateUpdate(sender: ActorRef) = {
+    hunger = Math.max(hunger - r.nextInt(5), 0)
+    thirst = Math.max(thirst - r.nextInt(5), 0)
+    sex = Math.min(sex + r.nextInt(5), 100)
+    
+    println("hunger(" +hunger+") thirst(" +thirst+") sex(" +sex+") food size("+food.size+") water size("+water.size+") fuckBuddies size("+fuckBuddies.size+")")
+    
+    if(hunger == 0 || thirst  == 0){
+      println("DIE DIE DIE")
+      sender!Die
+    }
+    
+    food = degradeCollection(food)
+    water= degradeCollection(water)
+    fuckBuddies = degradeCollection(fuckBuddies)
+    
+  }
+  
+  def searchFood(location: Map[ActorRef, Int]){
+    location.foreach(_._1!wannaFuck)
+    
+  }
+  def searchWater(location: Map[ActorRef, Int]){
+    location.foreach(_._1!areYouWater)
+    
+  }
+  def serachForFuckBuddies(actor: Map[ActorRef, Int]){
+    actor.foreach(_._1!wannaFuck('A'))
+  }
+  def randLoc(location: Map[ActorRef, Int]) = {
+    val filteredLocations = location.filter(_._2 == 1)
+    if(!filteredLocations.isEmpty){
+      val nextInt = r.nextInt(filteredLocations.size)   
+      
+      sender!RegisterAtActorLocation(filteredLocations.keys.toList(nextInt))
+    }
+  }
+  
+  def getClosestActor(actors: Map[ActorRef, Int], memory: Map[ActorRef, Int]): Option[(ActorRef,Int)] = {
+    val intersection = actors.keySet.intersect(memory.keySet)    
+    
+    val list = actors.view.filter(x => intersection.contains(x._1)).toList.sortBy(_._2)
+    if(list.isEmpty){
+      None
+    }else{
+      Some(list.head)
+    }
+  }
+  def checkActorMoveOrDo(option: Option[(ActorRef,Int)], actor:ActorRef, function:() => Unit, elseFunction:() => Unit) = {
+    option match{
+      case Some(x) => {
+          if(x._2 > 1){
+            actor!MoveTowardActor(x._1)
+          }else{
+            function()
+          }
+        }
+      case None => {elseFunction}
+    }
+  }
+  
+  def receive = {
+    case Startup => sender!RegisterAtRandomLoc
+    case Tick => {sender!GetSouroundingRequest(10); stateUpdate(sender)}
+    case GetSouroundingResponse(location: Map[ActorRef, Int], actors: Map[ActorRef, Int]) => {
+        searchFood(location)
+        searchWater(location)
+        serachForFuckBuddies(actors)
+        
+        if(hunger < 50 || thirst < 50){
+          if(hunger < thirst){            
+            val actor = getClosestActor(location, food)            
+            checkActorMoveOrDo(actor, sender, () => {hunger += r.nextInt(20)}, () => randLoc(location))
+          }else{           
+            val actor = getClosestActor(location, water)            
+            checkActorMoveOrDo(actor, sender, () => {thirst += r.nextInt(20)}, () => randLoc(location))
+          }
+//        }else if (sex > 80){
+//          println("SEXY")
+//          val actor = getClosestActor(actors, fuckBuddies)
+//          checkActorMoveOrDo(actor, sender, () => {sex = 0})
+        }else{
+          randLoc(location)
+        }
+      }
+    case yesImFood => {
+        food += ((sender, 5))
+      }
+    case yesImWater => {
+        water += ((sender, 5))
+      }
+    case hellYesIWannaFuck => {
+        fuckBuddies += ((sender, 5))
+      }
+    case _ => println("received unknown message")
+  }  
+}
+
+//class Memory(val ttl:Int, val coord:(Int, Int));

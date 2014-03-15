@@ -3,6 +3,7 @@ package com.mayorgraeme.evol
 
 import akka.actor.Actor
 import akka.actor.ActorRef
+import akka.actor.Kill
 import akka.actor.Props
 
 import org.jgrapht.graph.SimpleGraph
@@ -12,8 +13,14 @@ import org.jgrapht.alg.DijkstraShortestPath
 import org.jgrapht.alg.DijkstraShortestPath._
 
 import scala.collection.JavaConversions._
+import scala.util.Random
 
-class LocationManagerActor(val x:Int, val y:Int) extends Actor{    
+class LocationManagerActor(val x:Int, val y:Int, val noActors:Int) extends Actor{    
+  val r = new Random()
+  
+  //Create child actors
+  val testActors = Array.fill(noActors)(context.actorOf(Props(new BasicAnimalActor))).toSet  
+  testActors.foreach(_!Startup)
   
   val mdArray = Array.fill(x, y)(context.actorOf(Props[LocationActor]))  
   
@@ -98,39 +105,47 @@ class LocationManagerActor(val x:Int, val y:Int) extends Actor{
   def printLine = println(" -"+"-"*y)
   
   def move(location:ActorRef, actor:ActorRef){
+    leaveLocation(actor)
+    //println("enter "+xyArray(location))
+    locationStates(location).currentResidents += actor //add to previous location
+    actorsToActors(actor) = location
+  }
+  
+  def leaveLocation(actor:ActorRef){
     var lastLocation = actorsToActors.get(actor)
-    //  println("to "+xyArray(location))
-    
+        
     lastLocation match{
       case Some(i) => {
-          //       println("from "+xyArray(i))
+          //println("leave "+xyArray(i))
           locationStates.get(i) match {
             case Some(j) => {j.currentResidents -= actor}
             case None => {}
           }}
       case None => {}
     }
-    locationStates(location).currentResidents += actor //add to previous location
-    actorsToActors(actor) = location
   }
   
   def receive = {
     case  MoveTowardActor(actor:ActorRef) => {    
+        //println("MOVE TOWARD ACTOR "+xyArray(actor))
         val fromlocation = actorsToActors.get(sender)
-        val toLocation =  actorsToActors.get(actor)
+        val toLocation = Option(actor) //actorsToActors.get(actor)
         fromlocation match {
           case Some(i) => toLocation match {
               case Some(j) => {
-                  val path = DijkstraShortestPath.findPathBetween(graph.asInstanceOf[Graph[Serializable,DefaultEdge]], i, j)
+//                  println("from loc "+xyArray(i))
+//                  println("to loc   "+xyArray(j))
+                  val path = DijkstraShortestPath.findPathBetween(graph.asInstanceOf[Graph[Serializable,DefaultEdge]], i, j).filter(x => xyArray(graph.getEdgeTarget(x)) != xyArray(i))                  
+                  
+//                  path.foreach(i => {print(xyArray(graph.getEdgeTarget(i)))}) 
+//                  println
                   
                   if(!path.isEmpty){
-                    
-//                    println("from loc "+xyArray(i))
-//                    println("to loc   "+xyArray(j))
+                                                         
 //                    path.foreach(i => {print(xyArray(graph.getEdgeTarget(i)))}) 
 //                    println
                     
-                    move(graph.getEdgeTarget(path.view.filter(_ != fromlocation)(0)), sender);
+                    move(graph.getEdgeTarget(path(0)), sender);
 
                     //          println("G "+ " to "+xyArray(vertex))
                     
@@ -140,7 +155,16 @@ class LocationManagerActor(val x:Int, val y:Int) extends Actor{
             } case None => Unit
         }        
       }
-    
+    case Die => {
+        leaveLocation(sender)
+        testActors.remove(sender)
+        context.stop(sender)
+        //sender!Kill
+      }
+    case RegisterAtRandomLoc => {
+        val loc = mdArray(r.nextInt(x))(r.nextInt(y))
+        move(loc, sender)
+      }
     case RegisterAtActorLocation(location:ActorRef) => {
         move(location, sender)
       }
@@ -171,7 +195,7 @@ class LocationManagerActor(val x:Int, val y:Int) extends Actor{
                   print(math.floor((locationStates(actor).currentResidents.size/10)).toInt)
                 }else {
                   locationStates.get(actor) match {
-                    case Some(i) => print(" ") //i.currentState
+                    case Some(i) => print(i.currentState)
                     case None => print(" ")
                   }  
                 }
@@ -180,6 +204,8 @@ class LocationManagerActor(val x:Int, val y:Int) extends Actor{
           }
         }
         printLine
+        
+        testActors.foreach(_!Tick)
       }
     case _ => println("Received unknown message ")
   }  

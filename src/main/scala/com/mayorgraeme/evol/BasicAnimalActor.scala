@@ -17,6 +17,9 @@ class BasicAnimalActor extends Actor {
   var food = Map.empty[ActorRef, Int]
   var water = Map.empty[ActorRef, Int]
   var fuckBuddies = Map.empty[ActorRef, Int]
+  
+  val maxAge = 100 + r.nextInt(50)
+  var currentAge = 0
     
   val gender = r.nextInt(2) match {
     case 0 => 'M'
@@ -32,7 +35,7 @@ class BasicAnimalActor extends Actor {
     thirst = Math.max(thirst - r.nextInt(5), 0)
     sex = Math.min(sex + r.nextInt(5), 100)
     
-    println("hunger(" +hunger+") thirst(" +thirst+") sex(" +sex+") food size("+food.size+") water size("+water.size+") fuckBuddies size("+fuckBuddies.size+")")
+    println("hunger(" +hunger+") thirst(" +thirst+") sex(" +sex+") food size("+food.size+") water size("+water.size+") fuckBuddies size("+fuckBuddies.size+") age("+currentAge+"/"+maxAge+")")
     
     if(hunger == 0 || thirst  == 0){
       println("DIE DIE DIE")
@@ -54,7 +57,7 @@ class BasicAnimalActor extends Actor {
     
   }
   def serachForFuckBuddies(actor: Map[ActorRef, Int]){
-    actor.foreach(_._1!WannaFuck('A'))
+    actor.foreach(_._1!WannaFuck(gender))
   }
   def randLoc(location: Map[ActorRef, Int]) = {
     val filteredLocations = location.filter(_._2 == 1)
@@ -96,13 +99,17 @@ class BasicAnimalActor extends Actor {
         searchWater(location)
         serachForFuckBuddies(actors)
         
-        if(hunger < 50 || thirst < 50){
+        currentAge = currentAge + 1
+        
+        if (currentAge >= maxAge) {
+          sender ! Die
+        }else if(hunger < 50 || thirst < 50){
           if(hunger < thirst){            
             val actor = getClosestActor(location, food)            
-            checkActorMoveOrDo(actor, sender, () => {hunger += r.nextInt(20)}, () => randLoc(location))
+            checkActorMoveOrDo(actor, sender, () => {hunger += r.nextInt(50)}, () => randLoc(location))
           }else{           
             val actor = getClosestActor(location, water)            
-            checkActorMoveOrDo(actor, sender, () => {thirst += r.nextInt(20)}, () => randLoc(location))
+            checkActorMoveOrDo(actor, sender, () => {thirst += r.nextInt(50)}, () => randLoc(location))
           }
 //        }else if (sex > 80){
 //          println("SEXY")

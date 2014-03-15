@@ -18,12 +18,12 @@ class LocationActor extends Actor{
   
     case areYouFood => {
         if(loctype == '*'){
-          sender!yesImFood
+          sender!YesImFood
         }
       }
     case areYouWater =>{
         if(loctype == '~'){
-          sender!yesImWater
+          sender!YesImWater
         }
       }
     case _ => println("Received unknown message")

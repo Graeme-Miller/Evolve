@@ -23,15 +23,15 @@ case class StatusResponse(status: Char)
 
 
 //Animal Location Messages
-case class areYouFood
-case class yesImFood
+case class AreYouFood
+case class YesImFood
 
-case class areYouWater
-case class yesImWater
+case class AreYouWater
+case class YesImWater
 
 //Animal animal messages
-case class wannaFuck(actorType: Char)
-case class hellYesIWannaFuck
+case class WannaFuck(actorType: Char)
+case class HellYesIWannaFuck
 
 
 case class Tick

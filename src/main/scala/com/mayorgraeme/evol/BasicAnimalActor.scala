@@ -18,7 +18,10 @@ class BasicAnimalActor extends Actor {
   var water = Map.empty[ActorRef, Int]
   var fuckBuddies = Map.empty[ActorRef, Int]
     
-  
+  val gender = r.nextInt(2) match {
+    case 0 => 'M'
+    case _ => 'F'
+  }
 
   def degradeCollection(col: Map[ActorRef, Int]): Map[ActorRef, Int] = {
     col.view.map(x=>(x._1, x._2 -1)).filter(_._2 != 0).toMap
@@ -43,15 +46,15 @@ class BasicAnimalActor extends Actor {
   }
   
   def searchFood(location: Map[ActorRef, Int]){
-    location.foreach(_._1!wannaFuck)
+    location.foreach(_._1!AreYouFood)
     
   }
   def searchWater(location: Map[ActorRef, Int]){
-    location.foreach(_._1!areYouWater)
+    location.foreach(_._1!AreYouWater)
     
   }
   def serachForFuckBuddies(actor: Map[ActorRef, Int]){
-    actor.foreach(_._1!wannaFuck('A'))
+    actor.foreach(_._1!WannaFuck('A'))
   }
   def randLoc(location: Map[ActorRef, Int]) = {
     val filteredLocations = location.filter(_._2 == 1)
@@ -81,13 +84,13 @@ class BasicAnimalActor extends Actor {
             function()
           }
         }
-      case None => {elseFunction}
+      case None => {elseFunction()}
     }
   }
   
   def receive = {
     case Startup => sender!RegisterAtRandomLoc
-    case Tick => {sender!GetSouroundingRequest(10); stateUpdate(sender)}
+    case Tick => {stateUpdate(sender); sender!GetSouroundingRequest(10);}
     case GetSouroundingResponse(location: Map[ActorRef, Int], actors: Map[ActorRef, Int]) => {
         searchFood(location)
         searchWater(location)
@@ -109,17 +112,15 @@ class BasicAnimalActor extends Actor {
           randLoc(location)
         }
       }
-    case yesImFood => {
+    case YesImFood => {
         food += ((sender, 5))
       }
-    case yesImWater => {
+    case YesImWater => {
         water += ((sender, 5))
       }
-    case hellYesIWannaFuck => {
+    case HellYesIWannaFuck => {
         fuckBuddies += ((sender, 5))
       }
     case _ => println("received unknown message")
   }  
 }
-
-//class Memory(val ttl:Int, val coord:(Int, Int));

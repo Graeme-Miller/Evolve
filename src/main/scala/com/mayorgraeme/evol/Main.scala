@@ -5,6 +5,7 @@ package com.mayorgraeme.evol
 import akka.actor.ActorSystem
 import akka.actor.Props
 import scala.concurrent.duration._
+import com.mayorgraeme.evol.Messages._
 import scala.concurrent.ExecutionContext.Implicits.global
 
 

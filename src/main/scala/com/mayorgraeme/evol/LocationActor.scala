@@ -3,6 +3,7 @@ package com.mayorgraeme.evol
 
 import akka.actor.Actor
 import scala.util.Random
+import com.mayorgraeme.evol.Messages._
 
 class LocationActor extends Actor{
   

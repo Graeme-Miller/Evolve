@@ -14,6 +14,8 @@ import org.jgrapht.alg.DijkstraShortestPath._
 
 import scala.collection.JavaConversions._
 import scala.util.Random
+import com.mayorgraeme.evol.animal.BasicAnimalActor
+import com.mayorgraeme.evol.Messages._
 
 class LocationManagerActor(val x:Int, val y:Int, val noActors:Int) extends Actor{    
   val r = new Random()

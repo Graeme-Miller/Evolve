@@ -1,9 +1,10 @@
 
-package com.mayorgraeme.evol
+package com.mayorgraeme.evol.animal
 
 import akka.actor.Actor
 import akka.actor.ActorRef
 import scala.util.Random
+import com.mayorgraeme.evol.Messages._
 
 import scala.util.Sorting._
 

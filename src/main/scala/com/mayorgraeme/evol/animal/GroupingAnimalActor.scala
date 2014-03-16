@@ -1,5 +1,5 @@
 //
-//package com.mayorgraeme.evol
+//package com.mayorgraeme.evol.animal
 //
 //import akka.actor.Actor
 //import akka.actor.ActorRef

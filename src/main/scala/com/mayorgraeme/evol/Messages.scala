@@ -2,38 +2,40 @@
 package com.mayorgraeme.evol
 
 import akka.actor.ActorRef
+object Messages {
 
 //registration
-case class RegisterAtActorLocation(location:ActorRef)
-case class RegisterAtLocation(x:Int, y:Int)
-case class RegisterAtRandomLoc
-case class Startup
+  case class RegisterAtActorLocation(location:ActorRef)
+  case class RegisterAtLocation(x:Int, y:Int)
+  case class RegisterAtRandomLoc
+  case class Startup
 
 //Movement
-case class MoveTowardActor(actor:ActorRef)
-case class Die
+  case class MoveTowardActor(actor:ActorRef)
+  case class Die
 
 
 //Awareness messages
-case class GetSouroundingRequest(radius: Int)
-case class GetSouroundingResponse(location: Map[ActorRef, Int], actors: Map[ActorRef, Int])
+  case class GetSouroundingRequest(radius: Int)
+  case class GetSouroundingResponse(location: Map[ActorRef, Int], actors: Map[ActorRef, Int])
 
-case class StatusRequest
-case class StatusResponse(status: Char)
+  case class StatusRequest
+  case class StatusResponse(status: Char)
 
 
 //Animal Location Messages
-case class AreYouFood
-case class YesImFood
+  case class AreYouFood
+  case class YesImFood
 
-case class AreYouWater
-case class YesImWater
+  case class AreYouWater
+  case class YesImWater
 
 //Animal animal messages
-case class WannaFuck(actorType: Char)
-case class HellYesIWannaFuck
-case class Penetrate
+  case class WannaFuck(actorType: Char)
+  case class HellYesIWannaFuck
+  case class Penetrate
 
-case class TheMiracleOfChildBirth
+  case class TheMiracleOfChildBirth
 
-case class Tick
+  case class Tick
+}

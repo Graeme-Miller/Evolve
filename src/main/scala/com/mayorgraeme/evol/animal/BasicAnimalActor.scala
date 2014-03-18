@@ -3,6 +3,7 @@ package com.mayorgraeme.evol.animal
 
 import akka.actor.Actor
 import akka.actor.ActorRef
+import com.mayorgraeme.evol.data.AnimalData
 import scala.util.Random
 import com.mayorgraeme.evol.Messages._
 
@@ -159,6 +160,9 @@ class BasicAnimalActor extends Actor {
           sex = 0        
         }
       }
+    case StatusRequest => {
+        sender!StatusResponse(new AnimalData(gender, pregnant, pregnancyCountdown, hunger, thirst, sex, food.size, water.size, fuckBuddies.size, currentAge, maxAge))
+    }
     case _ => println("received unknown message")
   }  
 }

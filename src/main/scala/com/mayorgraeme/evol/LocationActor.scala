@@ -2,6 +2,7 @@
 package com.mayorgraeme.evol
 
 import akka.actor.Actor
+import com.mayorgraeme.evol.data.LocationData
 import scala.util.Random
 import com.mayorgraeme.evol.Messages._
 
@@ -15,7 +16,7 @@ class LocationActor extends Actor{
   }
   
   def receive = {
-    case StatusRequest => sender!StatusResponse(loctype)
+    case StatusRequest => sender!StatusResponse(new LocationData(loctype))
   
     case AreYouFood => {
         if(loctype == '*'){

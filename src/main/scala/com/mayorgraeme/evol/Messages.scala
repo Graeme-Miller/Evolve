@@ -2,6 +2,8 @@
 package com.mayorgraeme.evol
 
 import akka.actor.ActorRef
+import com.mayorgraeme.evol.data.SystemInfo
+import com.mayorgraeme.evol.data.ActorData
 object Messages {
 
 //registration
@@ -20,7 +22,7 @@ object Messages {
   case class GetSouroundingResponse(location: Map[ActorRef, Int], actors: Map[ActorRef, Int])
 
   case class StatusRequest
-  case class StatusResponse(status: Char)
+  case class StatusResponse(status: ActorData)
 
 
 //Animal Location Messages
@@ -38,4 +40,6 @@ object Messages {
   case class TheMiracleOfChildBirth
 
   case class Tick
+  case class SystemInfoRequest
+  case class SystemInfoResponse(info: SystemInfo)
 }

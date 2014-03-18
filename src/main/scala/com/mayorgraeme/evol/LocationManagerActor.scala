@@ -8,6 +8,8 @@ import akka.actor.Props
 
 import org.jgrapht.graph.SimpleGraph
 import org.jgrapht.graph.DefaultEdge
+import com.mayorgraeme.evol.data.ActorData
+import com.mayorgraeme.evol.data.SystemInfo
 import org.jgrapht.Graph
 import org.jgrapht.alg.DijkstraShortestPath
 import org.jgrapht.alg.DijkstraShortestPath._
@@ -64,6 +66,8 @@ class LocationManagerActor(val x:Int, val y:Int, val noActors:Int) extends Actor
   
   val locationStates = mdArray.flatten.map{(_, new LocationState)}.toMap
   var actorsToActors = collection.mutable.Map.empty[ActorRef, ActorRef]
+  var actorDataState = collection.mutable.Map.empty[ActorRef, (Int, Int, ActorData)]
+  var lastSystemInfo:SystemInfo = new SystemInfo(x,y, Map.empty)
   
   def createAnimal: ActorRef = {
     val actor = context.actorOf(Props(new BasicAnimalActor))
@@ -171,6 +175,7 @@ class LocationManagerActor(val x:Int, val y:Int, val noActors:Int) extends Actor
         
   
     case Die => {
+        actorDataState.remove(sender)
         leaveLocation(sender)
         testActors.remove(sender)
         context.stop(sender)
@@ -201,30 +206,54 @@ class LocationManagerActor(val x:Int, val y:Int, val noActors:Int) extends Actor
         sender!GetSouroundingResponse.tupled(circleMembers(x, y, radius, sender))
         
       }
-    case StatusResponse(status: Char) => locationStates(sender).currentState = status
+    case StatusResponse(status: ActorData) => {
+        if(xyArray.contains(sender)){
+          val xy = xyArray(sender)
+          actorDataState(sender) = (xy._1, xy._2, status)
+        }else if(actorsToActors.contains(sender)) {
+          val loc = actorsToActors(sender)
+          val xy = xyArray(loc)
+          actorDataState(sender) = (xy._1, xy._2, status)
+        }
+      }
     case Tick => {
         mdArray.flatten.foreach(_!StatusRequest)
-        printLine
-        mdArray.foreach {array => {
-            print("|")
-            array.foreach{actor => {
-                if(!locationStates(actor).currentResidents.isEmpty){
-                  //print(locationStates(actor).currentResidents.head)
-                  print(math.floor((locationStates(actor).currentResidents.size)).toInt)
-                }else {
-                  locationStates.get(actor) match {
-                    case Some(i) => print(i.currentState)
-                    case None => print(" ")
-                  }  
-                }
-              }}
-            println(" |" )
-          }
-        }
-        printLine
+//        printLine
+//        mdArray.foreach {array => {
+//            print("|")
+//            array.foreach{actor => {
+//                if(!locationStates(actor).currentResidents.isEmpty){
+//                  //print(locationStates(actor).currentResidents.head)
+//                  print(math.floor((locationStates(actor).currentResidents.size)).toInt)
+//                }else {
+//                  locationStates.get(actor) match {
+//                    case Some(i) => print(i.currentState)
+//                    case None => print(" ")
+//                  }  
+//                }
+//              }}
+//            println(" |" )
+//          }
+//        }
+//        printLine
         
-        testActors.foreach(_!Tick)
+        testActors.foreach{x=> x!Tick; x!StatusRequest}
+        
+        val map = collection.mutable.Map.empty[(Int,Int),Set[ActorData]]
+        actorDataState.values.foreach{ x =>
+          val xy = (x._1, x._2)
+          val data = x._3
+          
+          if(!map.contains(xy)){
+            map(xy) = Set.empty[ActorData]
+          }
+          map(xy) += data
+        }
+        
+        lastSystemInfo = new SystemInfo(x, y, map.toMap)
+        
       }
+    case SystemInfoRequest => {sender!SystemInfoResponse(lastSystemInfo)}
     case _ => println("Received unknown message ")
   }  
   

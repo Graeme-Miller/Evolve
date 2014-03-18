@@ -2,8 +2,8 @@
 package com.mayorgraeme.evol
 
 import akka.actor.ActorRef
-import com.mayorgraeme.evol.data.SystemInfo
-import com.mayorgraeme.evol.data.ActorData
+import com.mayorgraeme.evol.data.java.SystemInfo
+import com.mayorgraeme.evol.data.java.ActorData
 object Messages {
 
 //registration

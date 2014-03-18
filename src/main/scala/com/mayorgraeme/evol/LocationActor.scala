@@ -2,7 +2,7 @@
 package com.mayorgraeme.evol
 
 import akka.actor.Actor
-import com.mayorgraeme.evol.data.LocationData
+import com.mayorgraeme.evol.data.java.LocationData
 import scala.util.Random
 import com.mayorgraeme.evol.Messages._
 

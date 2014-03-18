@@ -8,8 +8,11 @@ import akka.actor.Props
 
 import org.jgrapht.graph.SimpleGraph
 import org.jgrapht.graph.DefaultEdge
-import com.mayorgraeme.evol.data.ActorData
-import com.mayorgraeme.evol.data.SystemInfo
+import com.mayorgraeme.evol.data.java.ActorData
+import com.mayorgraeme.evol.data.java.SystemInfo
+import java.util.ArrayList
+import java.util.HashMap
+import java.util.HashSet
 import org.jgrapht.Graph
 import org.jgrapht.alg.DijkstraShortestPath
 import org.jgrapht.alg.DijkstraShortestPath._
@@ -67,7 +70,7 @@ class LocationManagerActor(val x:Int, val y:Int, val noActors:Int) extends Actor
   val locationStates = mdArray.flatten.map{(_, new LocationState)}.toMap
   var actorsToActors = collection.mutable.Map.empty[ActorRef, ActorRef]
   var actorDataState = collection.mutable.Map.empty[ActorRef, (Int, Int, ActorData)]
-  var lastSystemInfo:SystemInfo = new SystemInfo(x,y, Map.empty)
+  var lastSystemInfo:SystemInfo = new SystemInfo(x,y, null)
   
   def createAnimal: ActorRef = {
     val actor = context.actorOf(Props(new BasicAnimalActor))
@@ -237,23 +240,21 @@ class LocationManagerActor(val x:Int, val y:Int, val noActors:Int) extends Actor
 //        }
 //        printLine
         
-        testActors.foreach{x=> x!Tick; x!StatusRequest}
+        testActors.foreach{x=> x!Tick; x!StatusRequest}        
+        val array = Array.fill[java.util.List[ActorData]](x, y)(new ArrayList[ActorData]())
         
-        val map = collection.mutable.Map.empty[(Int,Int),Set[ActorData]]
-        actorDataState.values.foreach{ x =>
-          val xy = (x._1, x._2)
-          val data = x._3
-          
-          if(!map.contains(xy)){
-            map(xy) = Set.empty[ActorData]
-          }
-          map(xy) += data
+  
+        actorDataState.values.foreach{ it =>
+          val x = it._1
+          val y = it._2
+          val data = it._3
+                    
+          array(x)(y).add(data)
         }
         
-        lastSystemInfo = new SystemInfo(x, y, map.toMap)
-        
+        lastSystemInfo = new SystemInfo(x, y, array)
       }
-    case SystemInfoRequest => {sender!SystemInfoResponse(lastSystemInfo)}
+    case SystemInfoRequest => sender!SystemInfoResponse(lastSystemInfo)
     case _ => println("Received unknown message ")
   }  
   

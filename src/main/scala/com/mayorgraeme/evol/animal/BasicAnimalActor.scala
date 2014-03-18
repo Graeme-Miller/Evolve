@@ -3,7 +3,7 @@ package com.mayorgraeme.evol.animal
 
 import akka.actor.Actor
 import akka.actor.ActorRef
-import com.mayorgraeme.evol.data.AnimalData
+import com.mayorgraeme.evol.data.java.AnimalData
 import scala.util.Random
 import com.mayorgraeme.evol.Messages._
 

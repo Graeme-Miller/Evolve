@@ -25,11 +25,25 @@ import com.mayorgraeme.evol.Messages._
 class LocationManagerActor(val x:Int, val y:Int, val noActors:Int) extends Actor{    
   val r = new Random()
   
+  
   //Create child actors
   var testActors = collection.mutable.Set.empty[ActorRef]
   (1 to noActors).foreach(x => testActors += createAnimal)
   
   val mdArray = Array.fill(x, y)(context.actorOf(Props[LocationActor]))  
+  
+  val locationGenerator = new LocationGenerator(x,y);
+  mdArray.view.zipWithIndex.foreach{arrayTuple => {
+      arrayTuple._1.view.zipWithIndex.foreach{
+        elementTuple => { 
+          var x1 = arrayTuple._2
+          var y1 = elementTuple._2
+          elementTuple._1 ! InitLocationType(locationGenerator.map(x1)(y1))
+        }
+      }
+    }
+  }
+  
   
   var xyArray = collection.mutable.Map.empty[ActorRef, (Int, Int)]
   var graph = new SimpleGraph[ActorRef, DefaultEdge](classOf[DefaultEdge])
@@ -182,7 +196,6 @@ class LocationManagerActor(val x:Int, val y:Int, val noActors:Int) extends Actor
         leaveLocation(sender)
         testActors.remove(sender)
         context.stop(sender)
-        //sender!Kill
       }
     case TheMiracleOfChildBirth => {
         testActors += createAnimal
@@ -221,24 +234,6 @@ class LocationManagerActor(val x:Int, val y:Int, val noActors:Int) extends Actor
       }
     case Tick => {
         mdArray.flatten.foreach(_!StatusRequest)
-//        printLine
-//        mdArray.foreach {array => {
-//            print("|")
-//            array.foreach{actor => {
-//                if(!locationStates(actor).currentResidents.isEmpty){
-//                  //print(locationStates(actor).currentResidents.head)
-//                  print(math.floor((locationStates(actor).currentResidents.size)).toInt)
-//                }else {
-//                  locationStates.get(actor) match {
-//                    case Some(i) => print(i.currentState)
-//                    case None => print(" ")
-//                  }  
-//                }
-//              }}
-//            println(" |" )
-//          }
-//        }
-//        printLine
         
         testActors.foreach{x=> x!Tick; x!StatusRequest}        
         val array = Array.fill[java.util.List[ActorData]](x, y)(new ArrayList[ActorData]())

@@ -12,7 +12,8 @@ import scala.util.Sorting._
 class BasicAnimalActor extends Actor {
   val r = new Random()
   
-  var hunger = 40//80 + r.nextInt(20)
+  var dead = false
+  var hunger = 80 + r.nextInt(20)
   var thirst = 80 + r.nextInt(20)
   var sex = r.nextInt(100)
 
@@ -20,7 +21,7 @@ class BasicAnimalActor extends Actor {
   var water = Map.empty[ActorRef, Int]
   var fuckBuddies = Map.empty[ActorRef, Int]
   
-  val maxAge = 150 + r.nextInt(50)
+  val maxAge = 200 + r.nextInt(50)
   var currentAge = 0
     
   val gender = r.nextInt(2) match {
@@ -30,7 +31,7 @@ class BasicAnimalActor extends Actor {
   
   var pregnant = false
   var pregnancyCountdown = 0
-  val gestation = 20
+  val gestation = 10
 
   def degradeCollection(col: Map[ActorRef, Int]): Map[ActorRef, Int] = {
     col.view.map(x=>(x._1, x._2 -1)).filter(_._2 != 0).toMap
@@ -47,6 +48,7 @@ class BasicAnimalActor extends Actor {
     
     if(hunger == 0 || thirst  == 0){
       println("DIE DIE DIE")
+      dead = true
       sender!Die
     }
     
@@ -161,8 +163,10 @@ class BasicAnimalActor extends Actor {
         }
       }
     case StatusRequest => {
-        sender!StatusResponse(new AnimalData(gender, pregnant, pregnancyCountdown, hunger, thirst, sex, food.size, water.size, fuckBuddies.size, currentAge, maxAge))
-    }
+        if(!dead){
+          sender!StatusResponse(new AnimalData(gender, pregnant, pregnancyCountdown, hunger, thirst, sex, food.size, water.size, fuckBuddies.size, currentAge, maxAge))
+        }
+      }
     case _ => println("received unknown message")
   }  
 }

@@ -11,6 +11,8 @@ object Messages {
   case class RegisterAtLocation(x:Int, y:Int)
   case class RegisterAtRandomLoc
   case class Startup
+  
+  case class InitLocationType(locType: Char)
 
 //Movement
   case class MoveTowardActor(actor:ActorRef)

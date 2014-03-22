@@ -26,7 +26,7 @@ class RestController {
     val future = System.locationManagerActor?SystemInfoRequest
     Await.result(future, timeout.duration) match {
       
-      case SystemInfoResponse(x) => {println("GRA222 "+x); x}
+      case SystemInfoResponse(x) => {x}
       case _ => {println("RestController - unknown response"); new SystemInfo(0,0, null)}
     }
   }

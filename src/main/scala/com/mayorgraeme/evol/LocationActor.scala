@@ -3,28 +3,24 @@ package com.mayorgraeme.evol
 
 import akka.actor.Actor
 import com.mayorgraeme.evol.data.java.LocationData
-import scala.util.Random
 import com.mayorgraeme.evol.Messages._
 
-class LocationActor extends Actor{
+class LocationActor() extends Actor{
   
-  val r = new Random()
-  val loctype = hashCode.abs%5 match{
-    case 0 => '*'
-    case 1 => '~'
-    case _ => ' '
-  }
+
+  var myLocType = ' ';
   
   def receive = {
-    case StatusRequest => sender!StatusResponse(new LocationData(loctype))
-  
+    case StatusRequest => sender!StatusResponse(new LocationData(myLocType))
+    case InitLocationType(locType) => myLocType = locType
+      
     case AreYouFood => {
-        if(loctype == '*'){
+        if(myLocType == '*'){
           sender!YesImFood
         }
       }
     case AreYouWater =>{
-        if(loctype == '~'){
+        if(myLocType == '~'){
           sender!YesImWater
         }
       }

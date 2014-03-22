@@ -123,10 +123,10 @@ class BasicAnimalActor extends Actor {
         }else if(hunger < 50 || thirst < 50){
           if(hunger < thirst){            
             val actor = getClosestActor(location, food)            
-            checkActorMoveOrDo(actor, sender, () => {hunger += r.nextInt(50)}, () => randLoc(location))
+            checkActorMoveOrDo(actor, sender, () => {hunger += r.nextInt(20)}, () => randLoc(location))
           }else{           
             val actor = getClosestActor(location, water)            
-            checkActorMoveOrDo(actor, sender, () => {thirst += r.nextInt(50)}, () => randLoc(location))
+            checkActorMoveOrDo(actor, sender, () => {thirst += r.nextInt(20)}, () => randLoc(location))
           }
         }else if (sex > 80){          
           val actor = getClosestActor(actors, fuckBuddies)
@@ -141,13 +141,13 @@ class BasicAnimalActor extends Actor {
         }
       }
     case YesImFood => {
-        food += ((sender, 5))
+        food += ((sender, 20))
       }
     case YesImWater => {
-        water += ((sender, 5))
+        water += ((sender, 20))
       }
     case HellYesIWannaFuck => {
-        fuckBuddies += ((sender, 5))
+        fuckBuddies += ((sender, 50))
       }
     case WannaFuck(x) =>{
         if (x != gender  && !pregnant && sex > 80){

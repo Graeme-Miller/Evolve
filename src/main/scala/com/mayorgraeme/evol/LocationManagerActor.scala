@@ -11,8 +11,7 @@ import org.jgrapht.graph.DefaultEdge
 import com.mayorgraeme.evol.data.java.ActorData
 import com.mayorgraeme.evol.data.java.SystemInfo
 import java.util.ArrayList
-import java.util.HashMap
-import java.util.HashSet
+import com.mayorgraeme.evol.util.ArrayFunctions._
 import org.jgrapht.Graph
 import org.jgrapht.alg.DijkstraShortestPath
 import org.jgrapht.alg.DijkstraShortestPath._
@@ -92,42 +91,17 @@ class LocationManagerActor(val x:Int, val y:Int, val noActors:Int) extends Actor
     actor
   }
     
-  def circleMembers(x1:Int, y1:Int, radius:Int, exclude: ActorRef): (Map[ActorRef, Int], Map[ActorRef, Int]) = {    
+  def getSourounding(x1:Int, y1:Int, radius:Int, exclude: ActorRef): (Map[ActorRef, Int], Map[ActorRef, Int]) = {    
     // println(x1+" "+y1+" "+radius)
     var locations = collection.mutable.Map.empty[ActorRef, Int]
     var actors = collection.mutable.Map.empty[ActorRef, Int]
     
-    val rSquared = radius*radius
-    val minX1 = (x1-radius).max(0)
-    val maxX1 = (x1+radius).min(x-1)
-    
-    val minY1 = (y1-radius).max(0)
-    val maxY1 = (y1+radius).min(y-1)    
-    
-    // println("min max "+ minX1 + " "+maxX1)
-    //  println("min max "+ minY1 + " "+maxY1)
-    
-    for(i <- (minX1 to maxX1)) {
-      for(j <- (minY1 to maxY1)) {
-        //x and y in range
-        val xDist = Math.abs(i-x1)
-        val yDist = Math.abs(j-y1)
-        val xDistSquared =  xDist * xDist
-        val yDistSquared =  yDist * yDist
-        val xyDistSquared = xDistSquared + yDistSquared
-                
-        
-        //     print("x1 ("+x1+") y1("+y1+") i("+i+") j("+j+") xDist("+xDist+") yDist("+yDist+") xDistSquared("+xDistSquared+") yDistSquared("+yDistSquared+") xyDistSquared("+xyDistSquared+")  rSquared("+rSquared+")")
-        if (xyDistSquared <= rSquared){   //array value in radius          
-          val distance = Math.sqrt(xyDistSquared).floor.toInt
-          //       println("distance("+distance+")")
-          
-          locations(mdArray(i)(j)) =  distance            
-          actors++= locationStates(mdArray(i)(j)).currentResidents.filter(_ != exclude).map{res => (res,distance)}
-        }
-        
+    circleMembers(x, y, x1, y1, radius){ (curX, curY, distance) => {
+        locations(mdArray(curX)(curY)) =  distance            
+        actors++= locationStates(mdArray(curX)(curY)).currentResidents.filter(_ != exclude).map{res => (res,distance)}
       }
-    }
+    }      
+    
     return (locations.toMap,actors.toMap)
   }
 
@@ -219,7 +193,7 @@ class LocationManagerActor(val x:Int, val y:Int, val noActors:Int) extends Actor
         var x = xyTuple._1
         var y = xyTuple._2
                 
-        sender!GetSouroundingResponse.tupled(circleMembers(x, y, radius, sender))
+        sender!GetSouroundingResponse.tupled(getSourounding(x, y, radius, sender))
         
       }
     case StatusResponse(status: ActorData) => {

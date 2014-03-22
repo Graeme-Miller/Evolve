@@ -47,7 +47,7 @@ class LocationGenerator(x: Int, y:Int) {
     val centreY = r.nextInt(y);
     
     val size = getInBetween(forrestMinRadius, forrestMaxRadius)
-    circleMembers(x, y, centreX, centreY, size){ (curX, curY, disance) => {
+    circleMembers(x, y, centreX, centreY, size){ (curX, curY, distance) => {
         if(r.nextInt(100) <= percentChanceTree){
           map(curX)(curY) = '*';
         }

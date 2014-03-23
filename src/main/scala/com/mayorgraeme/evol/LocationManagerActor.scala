@@ -32,37 +32,23 @@ class LocationManagerActor(val x:Int, val y:Int, val noActors:Int) extends Actor
   val mdArray = Array.fill(x, y)(context.actorOf(Props[LocationActor]))  
   
   val locationGenerator = new LocationGenerator(x,y);
-  mdArray.view.zipWithIndex.foreach{arrayTuple => {
-      arrayTuple._1.view.zipWithIndex.foreach{
-        elementTuple => { 
-          var x1 = arrayTuple._2
-          var y1 = elementTuple._2
-          elementTuple._1 ! InitLocationType(locationGenerator.map(x1)(y1))
-        }
-      }
-    }
-  }
+
   
   
   var xyArray = collection.mutable.Map.empty[ActorRef, (Int, Int)]
   var graph = new SimpleGraph[ActorRef, DefaultEdge](classOf[DefaultEdge])
   
-  mdArray.view.zipWithIndex.foreach{arrayTuple => {
-      arrayTuple._1.view.zipWithIndex.foreach{
-        elementTuple => {          
-          var x1 = arrayTuple._2
-          var y1 = elementTuple._2
-          xyArray(elementTuple._1) = (x1,y1) //add to xyArray
-        }}}}
-  
   
   mdArray.view.zipWithIndex.foreach{arrayTuple => {
       arrayTuple._1.view.zipWithIndex.foreach{
-        elementTuple => {          
+        elementTuple => {                 
           var x1 = arrayTuple._2
           var y1 = elementTuple._2
+          
+          elementTuple._1 ! InitLocationType(locationGenerator.map(x1)(y1)) //init the lcoation type
           xyArray(elementTuple._1) = (x1,y1) //add to xyArray
           
+          //Build the graph
           for(x2 <- x1-1 to x1+1){
             for(y2<- (y1-1 to y1+1)){               
               if((x1 != x2 || y1 != y2) //check we are not dealing with the location itself

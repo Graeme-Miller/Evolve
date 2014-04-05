@@ -6,11 +6,13 @@ package com.mayorgraeme.evol.data.java;
  */
 public class AnimalData extends ActorData{
 
-    private final char gender;
+    private final long uuid;
+    private final char gender;    
     private final boolean pregnant;
     private final int pregnancyCountdown, hunger,  thirst, sex, foodSize, waterSize, partnerSize, ageCurrent, ageMax;
 
-    public AnimalData(char gender, boolean pregnant, int pregnancyCountdown, int hunger, int thirst, int sex, int foodSize, int waterSize, int partnerSize, int ageCurrent, int ageMax) {
+    public AnimalData(long uuid, char gender, boolean pregnant, int pregnancyCountdown, int hunger, int thirst, int sex, int foodSize, int waterSize, int partnerSize, int ageCurrent, int ageMax) {
+        this.uuid = uuid;
         this.gender = gender;
         this.pregnant = pregnant;
         this.pregnancyCountdown = pregnancyCountdown;
@@ -22,6 +24,10 @@ public class AnimalData extends ActorData{
         this.partnerSize = partnerSize;
         this.ageCurrent = ageCurrent;
         this.ageMax = ageMax;
+    }
+
+    public long getUuid() {
+        return uuid;
     }
 
     public char getGender() {
@@ -67,5 +73,4 @@ public class AnimalData extends ActorData{
     public int getAgeMax() {
         return ageMax;
     }
-
 }

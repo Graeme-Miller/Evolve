@@ -66,7 +66,7 @@ class LocationGenerator(x: Int, y:Int) {
     while(curY != y){
       map(Math.max(curX-1, 0))(curY) = '~';
       map(curX)(curY) = '~';
-      map(Math.min(curX+1, x))(curY) = '~';
+      map(Math.min(curX+1, x-1))(curY) = '~';
     
       if(r.nextInt(100) <= percentChanceChangeDirection){
         direction = r.nextInt(3)
@@ -74,7 +74,7 @@ class LocationGenerator(x: Int, y:Int) {
       
       direction match {
         case 0 => curX = Math.max(0, curX-1);
-        case 1 => curX = Math.min(curX+1, x);
+        case 1 => curX = Math.min(curX+1, x-1);
         case _ => 
       }
       curY = curY+1

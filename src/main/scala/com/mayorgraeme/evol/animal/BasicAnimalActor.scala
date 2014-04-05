@@ -6,11 +6,13 @@ import akka.actor.ActorRef
 import com.mayorgraeme.evol.data.java.AnimalData
 import scala.util.Random
 import com.mayorgraeme.evol.Messages._
-
+import java.util.UUID;
 import scala.util.Sorting._
 
 class BasicAnimalActor extends Actor {
   val r = new Random()
+  
+  val uuid = UUID.randomUUID.getMostSignificantBits;
   
   var dead = false
   var hunger = 80 + r.nextInt(20)
@@ -31,7 +33,7 @@ class BasicAnimalActor extends Actor {
   
   var pregnant = false
   var pregnancyCountdown = 0
-  val gestation = 10
+  val gestation = 20
 
   def degradeCollection(col: Map[ActorRef, Int]): Map[ActorRef, Int] = {
     col.view.map(x=>(x._1, x._2 -1)).filter(_._2 != 0).toMap
@@ -164,7 +166,7 @@ class BasicAnimalActor extends Actor {
       }
     case StatusRequest => {
         if(!dead){
-          sender!StatusResponse(new AnimalData(gender, pregnant, pregnancyCountdown, hunger, thirst, sex, food.size, water.size, fuckBuddies.size, currentAge, maxAge))
+          sender!StatusResponse(new AnimalData(uuid, gender, pregnant, pregnancyCountdown, hunger, thirst, sex, food.size, water.size, fuckBuddies.size, currentAge, maxAge))
         }
       }
     case _ => println("received unknown message")

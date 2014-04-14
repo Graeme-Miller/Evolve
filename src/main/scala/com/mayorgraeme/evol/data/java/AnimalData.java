@@ -4,15 +4,17 @@ package com.mayorgraeme.evol.data.java;
  *
  * @author graeme
  */
-public class AnimalData extends ActorData{
+public class AnimalData extends ActorData {
 
     private final long uuid;
-    private final char gender;    
+    private final String species;
+    private final char gender;
     private final boolean pregnant;
-    private final int pregnancyCountdown, hunger,  thirst, sex, foodSize, waterSize, partnerSize, ageCurrent, ageMax;
+    private final int pregnancyCountdown, hunger, thirst, sex, foodSize, waterSize, partnerSize, ageCurrent, ageMax;
 
-    public AnimalData(long uuid, char gender, boolean pregnant, int pregnancyCountdown, int hunger, int thirst, int sex, int foodSize, int waterSize, int partnerSize, int ageCurrent, int ageMax) {
+    public AnimalData(long uuid, String species, char gender, boolean pregnant, int pregnancyCountdown, int hunger, int thirst, int sex, int foodSize, int waterSize, int partnerSize, int ageCurrent, int ageMax) {
         this.uuid = uuid;
+        this.species = species;
         this.gender = gender;
         this.pregnant = pregnant;
         this.pregnancyCountdown = pregnancyCountdown;
@@ -28,6 +30,10 @@ public class AnimalData extends ActorData{
 
     public long getUuid() {
         return uuid;
+    }
+
+    public String getSpecies() {
+        return species;
     }
 
     public char getGender() {

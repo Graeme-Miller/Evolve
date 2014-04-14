@@ -12,10 +12,10 @@ import scala.concurrent.ExecutionContext.Implicits.global
   
 object System {
   val system = ActorSystem("EvolutionService")
-  val locationManagerActor = system.actorOf(Props(new LocationManagerActor(30,60, 20)))           
+  val locationManagerActor = system.actorOf(Props(new LocationManagerActor(40,80, 20)))           
   
   system.scheduler.schedule(0 milliseconds,
-                            0.5 seconds)
+                            60 seconds)
   {locationManagerActor!Tick}
 }
 

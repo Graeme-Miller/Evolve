@@ -166,7 +166,7 @@ class BasicAnimalActor extends Actor {
       }
     case StatusRequest => {
         if(!dead){
-          sender!StatusResponse(new AnimalData(uuid, gender, pregnant, pregnancyCountdown, hunger, thirst, sex, food.size, water.size, fuckBuddies.size, currentAge, maxAge))
+          sender!StatusResponse(new AnimalData(uuid, "G1", gender, pregnant, pregnancyCountdown, hunger, thirst, sex, food.size, water.size, fuckBuddies.size, currentAge, maxAge))
         }
       }
     case _ => println("received unknown message")

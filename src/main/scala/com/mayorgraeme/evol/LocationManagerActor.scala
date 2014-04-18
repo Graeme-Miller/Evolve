@@ -24,11 +24,6 @@ import com.mayorgraeme.evol.Messages._
 class LocationManagerActor(val x:Int, val y:Int, val noActors:Int) extends Actor{    
   val r = new Random()
   
-  
-  //Create child actors
-  var testActors = collection.mutable.Set.empty[ActorRef]
-  (1 to noActors).foreach(x => testActors += createAnimal)
-  
   val mdArray = Array.fill(x, y)(context.actorOf(Props[LocationActor]))  
   
   val locationGenerator = new LocationGenerator(x,y);
@@ -71,9 +66,21 @@ class LocationManagerActor(val x:Int, val y:Int, val noActors:Int) extends Actor
   var actorDataState = collection.mutable.Map.empty[ActorRef, (Int, Int, ActorData)]
   var lastSystemInfo:SystemInfo = new SystemInfo(x,y, null)
   
+  //Create child actors
+  var testActors = collection.mutable.Set.empty[ActorRef]
+  (1 to noActors).foreach(x => testActors += createAnimal)
+  
   def createAnimal: ActorRef = {
     val actor = context.actorOf(Props(new BasicAnimalActor))
-    actor!Startup
+    val loc = mdArray(r.nextInt(x))(r.nextInt(y))
+    move(loc, actor)    
+    actor
+  }
+  
+  def createAnimal(baseActor: ActorRef): ActorRef = {
+    val actor = context.actorOf(Props(new BasicAnimalActor))
+    val baseLocation = actorsToActors(baseActor)
+    move(baseLocation, actor) 
     actor
   }
     
@@ -158,7 +165,7 @@ class LocationManagerActor(val x:Int, val y:Int, val noActors:Int) extends Actor
         context.stop(sender)
       }
     case TheMiracleOfChildBirth => {
-        testActors += createAnimal
+        testActors += createAnimal(sender)
       }
     case RegisterAtRandomLoc => {
         val loc = mdArray(r.nextInt(x))(r.nextInt(y))
@@ -166,12 +173,6 @@ class LocationManagerActor(val x:Int, val y:Int, val noActors:Int) extends Actor
       }
     case RegisterAtActorLocation(location:ActorRef) => {
         move(location, sender)
-      }
-    case RegisterAtLocation(x:Int, y:Int) => {
-        println("register at ("+x +" "+y+")")
-        val loc = mdArray(x)(y)
-        println("converts to "+xyArray(loc))
-        move(mdArray(x)(y), sender)
       }
     case GetSouroundingRequest(radius: Int)  =>  {
         val location = actorsToActors(sender)

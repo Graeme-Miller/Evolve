@@ -104,7 +104,6 @@ class BasicAnimalActor extends Actor {
   }
   
   def receive = {
-    case Startup => sender!RegisterAtRandomLoc
     case Tick => {stateUpdate(sender); sender!GetSouroundingRequest(10);}
     case GetSouroundingResponse(location: Map[ActorRef, Int], actors: Map[ActorRef, Int]) => {
         if(pregnant){
@@ -138,18 +137,18 @@ class BasicAnimalActor extends Actor {
                 sex = 0
               }
             }, () => randLoc(location))
-        }else{
+        }else if (r.nextInt(3) != 0){
           randLoc(location)
         }
       }
     case YesImFood => {
-        food += ((sender, 20))
+        food += ((sender, 10))
       }
     case YesImWater => {
-        water += ((sender, 20))
+        water += ((sender, 10))
       }
     case HellYesIWannaFuck => {
-        fuckBuddies += ((sender, 50))
+        fuckBuddies += ((sender, 20))
       }
     case WannaFuck(x) =>{
         if (x != gender  && !pregnant && sex > 80){

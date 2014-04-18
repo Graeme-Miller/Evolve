@@ -7,10 +7,8 @@ import com.mayorgraeme.evol.data.java.ActorData
 object Messages {
 
 //registration
-  case class RegisterAtActorLocation(location:ActorRef)
-  case class RegisterAtLocation(x:Int, y:Int)
+  case class RegisterAtActorLocation(location:ActorRef)  
   case class RegisterAtRandomLoc
-  case class Startup
   
   case class InitLocationType(locType: Char)
 

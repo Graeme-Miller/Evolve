@@ -8,16 +8,16 @@ class LocationGenerator(x: Int, y:Int) {
   val r = new Random
   
   //Forest Config
-  val minNoOfForrests = 15
-  val maxNoOfForrests = 25
-  val forrestMinRadius = 2
+  val minNoOfForrests = 2
+  val maxNoOfForrests = 3
+  val forrestMinRadius = 10
   val forrestMaxRadius = 15
   val percentChanceTree = 80
 
   //River Config
   val minNoOfRivers = 2
-  val maxNoOfRivers = 5
-  val percentChanceChangeDirection = 20
+  val maxNoOfRivers = 2
+  val percentChanceChangeDirection = 10
   
   val map = Array.fill[Char](x,y)(' ')
   

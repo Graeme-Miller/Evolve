@@ -1,6 +1,7 @@
 package com.mayorgraeme.evol
 
 import scala.util.Random
+import com.mayorgraeme.evol.enums.LocationType._
 import com.mayorgraeme.evol.util.ArrayFunctions._
 
 class LocationGenerator(x: Int, y:Int) {
@@ -19,7 +20,7 @@ class LocationGenerator(x: Int, y:Int) {
   val maxNoOfRivers = 2
   val percentChanceChangeDirection = 10
   
-  val map = Array.fill[Char](x,y)(' ')
+  val map = Array.fill[LocationType](x,y)(SAND)
   
   //Algorithm
   val noOfForrests = getInBetween(minNoOfForrests, maxNoOfForrests)
@@ -52,7 +53,7 @@ class LocationGenerator(x: Int, y:Int) {
     val size = getInBetween(forrestMinRadius, forrestMaxRadius)
     circleMembers(x, y, centreX, centreY, size){ (curX, curY, distance) => {
         if(r.nextInt(100) <= percentChanceTree){
-          map(curX)(curY) = '*';
+          map(curX)(curY) = SAND;
         }
       }
     }
@@ -64,9 +65,9 @@ class LocationGenerator(x: Int, y:Int) {
     var direction = 0;
     
     while(curY != y){
-      map(Math.max(curX-1, 0))(curY) = '~';
-      map(curX)(curY) = '~';
-      map(Math.min(curX+1, x-1))(curY) = '~';
+      map(Math.max(curX-1, 0))(curY) = WATER;
+      map(curX)(curY) = WATER;
+      map(Math.min(curX+1, x-1))(curY) = WATER;
     
       if(r.nextInt(100) <= percentChanceChangeDirection){
         direction = r.nextInt(3)

@@ -8,6 +8,8 @@ import akka.actor.Props
 
 import org.jgrapht.graph.SimpleGraph
 import org.jgrapht.graph.DefaultEdge
+import com.mayorgraeme.evol.animal.plant.PlantImpl
+import com.mayorgraeme.evol.enums.LocationType._
 import com.mayorgraeme.evol.data.java.ActorData
 import com.mayorgraeme.evol.data.java.SystemInfo
 import java.util.ArrayList
@@ -27,8 +29,6 @@ class LocationManagerActor(val x:Int, val y:Int, val noActors:Int) extends Actor
   val mdArray = Array.fill(x, y)(context.actorOf(Props[LocationActor]))  
   
   val locationGenerator = new LocationGenerator(x,y);
-
-  
   
   var xyArray = collection.mutable.Map.empty[ActorRef, (Int, Int)]
   var graph = new SimpleGraph[ActorRef, DefaultEdge](classOf[DefaultEdge])
@@ -68,7 +68,22 @@ class LocationManagerActor(val x:Int, val y:Int, val noActors:Int) extends Actor
   
   //Create child actors
   var testActors = collection.mutable.Set.empty[ActorRef]
-  (1 to noActors).foreach(x => testActors += createAnimal)
+  (1 to noActors).foreach(x => testActors += createPlant)
+  
+  def createPlant: ActorRef = {   
+    println("createdplant")
+    val actor = context.actorOf(Props(classOf[PlantImpl], 100, 100,100,100,10,Set(SAND)));
+    val loc = mdArray(r.nextInt(x))(r.nextInt(y))
+    move(loc, actor)        
+    actor
+  }
+  
+  def createPlant(baseLocation: ActorRef): ActorRef = {
+    println("createdplant")
+    val actor = context.actorOf(Props(classOf[PlantImpl], 100, 100,100,100,10,Set(SAND)));
+    move(baseLocation, actor) 
+    actor
+  }
   
   def createAnimal: ActorRef = {
     val actor = context.actorOf(Props(new BasicAnimalActor))
@@ -154,9 +169,7 @@ class LocationManagerActor(val x:Int, val y:Int, val noActors:Int) extends Actor
                         sender)
           case None => Unit
         }
-        
-      } 
-        
+      }         
   
     case Die => {
         actorDataState.remove(sender)
@@ -166,6 +179,13 @@ class LocationManagerActor(val x:Int, val y:Int, val noActors:Int) extends Actor
       }
     case TheMiracleOfChildBirth => {
         testActors += createAnimal(sender)
+      }
+    case TheMiracleOfPlantGrowth(location: ActorRef) => {        
+        val state = locationStates(location)
+        println("TheMiracleOfPlantGrowth " + state.currentResidents.size)
+        if(state.currentResidents.size == 0){        
+          testActors += createPlant(location)
+        }
       }
     case RegisterAtRandomLoc => {
         val loc = mdArray(r.nextInt(x))(r.nextInt(y))

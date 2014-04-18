@@ -60,14 +60,14 @@ class BasicAnimalActor extends Actor {
     
   }
   
-  def searchFood(location: Map[ActorRef, Int]){
-    location.foreach(_._1!AreYouFood)
-    
-  }
-  def searchWater(location: Map[ActorRef, Int]){
-    location.foreach(_._1!AreYouWater)
-    
-  }
+//  def searchFood(location: Map[ActorRef, Int]){
+//    location.foreach(_._1!AreYouFood)
+//    
+//  }
+//  def searchWater(location: Map[ActorRef, Int]){
+//    location.foreach(_._1!AreYouWater)
+//    
+//  }
   def serachForFuckBuddies(actor: Map[ActorRef, Int]){
     actor.foreach(_._1!WannaFuck(gender))
   }
@@ -110,8 +110,8 @@ class BasicAnimalActor extends Actor {
           pregnancyCountdown = pregnancyCountdown - 1
         }
         
-        searchFood(location)
-        searchWater(location)
+//        searchFood(location)
+//        searchWater(location)
         serachForFuckBuddies(actors)
         
         currentAge = currentAge + 1
@@ -141,12 +141,12 @@ class BasicAnimalActor extends Actor {
           randLoc(location)
         }
       }
-    case YesImFood => {
-        food += ((sender, 10))
-      }
-    case YesImWater => {
-        water += ((sender, 10))
-      }
+//    case YesImFood => {
+//        food += ((sender, 10))
+//      }
+//    case YesImWater => {
+//        water += ((sender, 10))
+//      }
     case HellYesIWannaFuck => {
         fuckBuddies += ((sender, 20))
       }

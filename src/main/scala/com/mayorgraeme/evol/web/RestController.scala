@@ -19,14 +19,13 @@ class RestController {
   @GET
   @Produces(Array(MediaType.APPLICATION_JSON))
   def processGet: SystemInfo = {    
-
-    // return new SystemInfo(13, 12, null)
-    implicit val timeout = Timeout(5 seconds);
+    println("processGet in")
+    implicit val timeout = Timeout(50 seconds);
 
     val future = System.locationManagerActor?SystemInfoRequest
-    Await.result(future, timeout.duration) match {
-      
-      case SystemInfoResponse(x) => {x}
+    println("processGet OUT")
+    Await.result(future, timeout.duration) match {      
+      case SystemInfoResponse(x) => {println("processGet RESP"); x}
       case _ => {println("RestController - unknown response"); new SystemInfo(0,0, null)}
     }
   }

@@ -1,28 +1,17 @@
 
 package com.mayorgraeme.evol
 
-
-import scala.concurrent.duration._
-import com.mayorgraeme.evol.Messages._
-
-
+import com.mayorgraeme.evol.path.Dijik
 
 
 object Main {
- 
-  
-  def main(args: Array[String]): Unit = {    
-    
-    val lg = new LocationGenerator(50,100)
-    
-    lg.map.foreach{ x => {
-        x.foreach{ y => {
-            print(" "+y)
-          }
-        }
-        println
-      }
+
+
+    def main(args: Array[String]): Unit = {
+        val dijik = new Dijik;
+
+        val ret = dijik.getNext((x,y) => {Some(1)})((5, 5))((1,1))((3,3))
+        println(ret)
     }
-  }
 }
 

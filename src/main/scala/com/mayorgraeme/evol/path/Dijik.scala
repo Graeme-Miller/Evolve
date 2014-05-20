@@ -1,7 +1,8 @@
 package com.mayorgraeme.evol.path
 
 import scala.collection.mutable
-import org.jgrapht.util.FibonacciHeap
+import org.jgrapht.util.{FibonacciHeapNode, FibonacciHeap}
+;
 
 
 /**
@@ -14,23 +15,18 @@ class Dijik {
     def getNext(distanceFunc: (Coord, Coord) => Option[Int])(max: Coord)(start: Coord)(end: Coord): List[Coord] = {
 
         val previous = new mutable.HashMap[Coord, Coord]
-        val distance = new mutable.HashMap[Coord, Int]
-        val priorityQueue = new mutable.PriorityQueue[Coord]()(Ordering.by(g =>
-            distance.get(g) match {
-                case Some(x) => -x
-                case None => Double.NegativeInfinity
-            }
-        ))
+        val distance = new mutable.HashMap[Coord, FibonacciHeapNode[Coord]]
+        val priorityQueue = new FibonacciHeap[Coord]()
 
-        val fibHeap = new FibonacciHeap[Coord]
+        def decreaseDistance(coord: Coord, newDistance:Double){
+            val node = distance(coord)
+            priorityQueue.decreaseKey(node, newDistance)
+        }
 
 
-        def addOrUpdateWithPrevious(coord: Coord, dist: Int, prev: Coord) = {
-            val oldVal = distance.put(coord, dist)
+        def decreaseDistanceWithPrevious(coord: Coord, dist: Double, prev: Coord) = {
+            decreaseDistance(coord, dist)
             previous.put(coord, prev)
-
-//            println(coord, dist, prev)
-//            println(distance)
         }
 
         def getSourounding(coord: Coord): List[Coord] = {
@@ -56,64 +52,56 @@ class Dijik {
             listBuffer.toList;
         }
 
-        distance.put(start, 0)
-        Range(0, max._1 + 1).foreach(x => Range(0, max._2 + 1).foreach(y => priorityQueue.enqueue((x, y))))
 
-        priorityQueue.takeWhile{ previous =>
-            println(previous, distance)
-            if(priorityQueue.isEmpty || !distance.contains(previous) || previous == end){
-                false
-            }else {
-                distance.get(previous) match {
-                    case Some(distanceToPrevious) => {
-                        getSourounding(previous) foreach { current =>
-                            distanceFunc(previous, current) match {
-                                case Some(distancePrevToCurr) => {
-                                    val distanceToCurrViaPrev = distanceToPrevious + distancePrevToCurr
-                                    distance.get(current) match {
-                                        case Some(distanceToCurr) => {
-                                            if (distanceToCurr < distanceToCurrViaPrev) {
-                                                addOrUpdateWithPrevious(current, distanceToCurrViaPrev, previous)
-                                            }
-                                        }
-                                        case None => addOrUpdateWithPrevious(current, distanceToCurrViaPrev, previous)
-                                    }
+
+        Range(0, max._1 + 1).foreach(x => Range(0, max._2 + 1).foreach(y => {
+            val newCoord = (x, y)
+            val newNode = new FibonacciHeapNode[Coord](newCoord, Double.PositiveInfinity)
+            priorityQueue.insert(newNode, newNode.getKey)
+            distance.put(newCoord, newNode)
+        }))
+
+        decreaseDistance(start, 0)
+
+
+        var prev: Coord = null
+        do {
+            val prevNode = priorityQueue.removeMin()
+            prev = prevNode.getData
+            val distanceToPrevious = prevNode.getKey
+
+            getSourounding(prev) foreach { current =>
+                distanceFunc(prev, current) match {
+                    case Some(distancePrevToCurr) => {
+
+
+                        val distanceToCurrViaPrev = distanceToPrevious + distancePrevToCurr
+                        println(prev, current, distancePrevToCurr, distanceToCurrViaPrev)
+                        distance.get(current) match {
+                            case Some(distanceToCurrNode) => {
+                                val distanceToCurr = distanceToCurrNode.getKey
+                                if (distanceToCurr > distanceToCurrViaPrev) {
+                                    decreaseDistanceWithPrevious(current, distanceToCurrViaPrev, prev)
                                 }
                             }
+                            case None =>
                         }
                     }
-                    case None => Unit //maybe return here? If there are no distances to head
+
                 }
-                true
             }
-        }
 
-        println("*****************")
-        mutable.HashMap
-        fibHeap.insert((1,2), 3)
-        fibHeap.insert((2,2), 4)
-        fibHeap.insert((2,3), 5)
-        println(fibHeap.removeMin())
-        println(fibHeap.removeMin())
-        println(fibHeap.removeMin())
+            distance.remove(prev)
 
-        fibHeap.insert((1,2), 3)
-        fibHeap.insert((2,2), 4)
-        fibHeap.insert((2,3), 5)
-        fibHeap.decreaseKey((2,3),1)
-        println(fibHeap.removeMin())
-        println(fibHeap.removeMin())
-        println(fibHeap.removeMin())
+        } while (!priorityQueue.isEmpty() && prev != end)
 
-        println("*****************")
 
 
 
         val listBuffer = new mutable.ListBuffer[Coord];
-        println(previous)
-        println(end)
+
         var curr = end
-        while(previous.contains(curr)){
+        while (previous.contains(curr)) {
             listBuffer.append(curr)
             curr = previous(curr)
         }

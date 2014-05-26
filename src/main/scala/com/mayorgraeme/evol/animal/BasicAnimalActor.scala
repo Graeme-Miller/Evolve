@@ -105,42 +105,42 @@ class BasicAnimalActor extends Actor {
   
   def receive = {
     case Tick => {stateUpdate(sender); sender!GetSouroundingRequest(10);}
-    case GetSouroundingResponse(location: Map[ActorRef, Int], actors: Map[ActorRef, Int]) => {
-        if(pregnant){
-          pregnancyCountdown = pregnancyCountdown - 1
-        }
-        
-//        searchFood(location)
-//        searchWater(location)
-        serachForFuckBuddies(actors)
-        
-        currentAge = currentAge + 1
-        
-        if (currentAge >= maxAge) {
-          sender ! Die
-        }else if(pregnant && pregnancyCountdown <= 0){
-          pregnant = false
-          sender!TheMiracleOfChildBirth
-        }else if(hunger < 50 || thirst < 50){
-          if(hunger < thirst){            
-            val actor = getClosestActor(location, food)            
-            checkActorMoveOrDo(actor, sender, () => {hunger += r.nextInt(20)}, () => randLoc(location))
-          }else{           
-            val actor = getClosestActor(location, water)            
-            checkActorMoveOrDo(actor, sender, () => {thirst += r.nextInt(20)}, () => randLoc(location))
-          }
-        }else if (sex > 80){          
-          val actor = getClosestActor(actors, fuckBuddies)
-          checkActorMoveOrDo(actor, sender, () => {
-              if(gender == 'M'){
-                actor.get._1!Penetrate
-                sex = 0
-              }
-            }, () => randLoc(location))
-        }else if (r.nextInt(3) != 0){
-          randLoc(location)
-        }
-      }
+//    case GetSouroundingResponse(location: Map[ActorRef, Int], actors: Map[ActorRef, Int]) => {
+//        if(pregnant){
+//          pregnancyCountdown = pregnancyCountdown - 1
+//        }
+//
+////        searchFood(location)
+////        searchWater(location)
+//        serachForFuckBuddies(actors)
+//
+//        currentAge = currentAge + 1
+//
+//        if (currentAge >= maxAge) {
+//          sender ! Die
+//        }else if(pregnant && pregnancyCountdown <= 0){
+//          pregnant = false
+//          sender!TheMiracleOfChildBirth
+//        }else if(hunger < 50 || thirst < 50){
+//          if(hunger < thirst){
+//            val actor = getClosestActor(location, food)
+//            checkActorMoveOrDo(actor, sender, () => {hunger += r.nextInt(20)}, () => randLoc(location))
+//          }else{
+//            val actor = getClosestActor(location, water)
+//            checkActorMoveOrDo(actor, sender, () => {thirst += r.nextInt(20)}, () => randLoc(location))
+//          }
+//        }else if (sex > 80){
+//          val actor = getClosestActor(actors, fuckBuddies)
+//          checkActorMoveOrDo(actor, sender, () => {
+//              if(gender == 'M'){
+//                actor.get._1!Penetrate
+//                sex = 0
+//              }
+//            }, () => randLoc(location))
+//        }else if (r.nextInt(3) != 0){
+//          randLoc(location)
+//        }
+//      }
 //    case YesImFood => {
 //        food += ((sender, 10))
 //      }

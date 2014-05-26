@@ -4,7 +4,9 @@ package com.mayorgraeme.evol
 import akka.actor.ActorRef
 import com.mayorgraeme.evol.data.java.SystemInfo
 import com.mayorgraeme.evol.data.java.ActorData
-import com.mayorgraeme.evol.enums.LocationType._;
+import com.mayorgraeme.evol.enums.LocationType._
+import com.mayorgraeme.evol.path.Dijik._
+;
 object Messages {
 
 //registration
@@ -20,7 +22,7 @@ object Messages {
 
 //Awareness messages
   case class GetSouroundingRequest(radius: Int)
-  case class GetSouroundingResponse(location: Map[ActorRef, Int], actors: Map[ActorRef, Int])
+  case class GetSouroundingResponse(currentLoc: Coord, location: Map[Coord, ActorRef], actors: Map[Coord, Set[ActorRef]])
 
   case class StatusRequest
   case class StatusResponse(status: ActorData)

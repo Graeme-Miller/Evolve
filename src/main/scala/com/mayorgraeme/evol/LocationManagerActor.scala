@@ -22,6 +22,7 @@ import scala.collection.JavaConversions._
 import scala.util.Random
 import com.mayorgraeme.evol.animal.BasicAnimalActor
 import com.mayorgraeme.evol.Messages._
+import com.mayorgraeme.evol.path.Dijik._
 
 class LocationManagerActor(val x: Int, val y: Int, val noActors: Int) extends Actor {
     val r = new Random()
@@ -30,9 +31,7 @@ class LocationManagerActor(val x: Int, val y: Int, val noActors: Int) extends Ac
 
     val locationGenerator = new LocationGenerator(x, y);
 
-    var xyArray = collection.mutable.Map.empty[ActorRef, (Int, Int)]
-    var graph = new SimpleGraph[ActorRef, DefaultEdge](classOf[DefaultEdge])
-
+    var xyArray = collection.mutable.Map.empty[ActorRef, Coord]
 
     mdArray.view.zipWithIndex.foreach { arrayTuple => {
         arrayTuple._1.view.zipWithIndex.foreach {
@@ -40,30 +39,11 @@ class LocationManagerActor(val x: Int, val y: Int, val noActors: Int) extends Ac
                 var x1 = arrayTuple._2
                 var y1 = elementTuple._2
 
-                elementTuple._1 ! InitLocationType(locationGenerator.map(x1)(y1)) //init the lcoation type
+                elementTuple._1 ! InitLocationType(locationGenerator.map(x1)(y1)) //init the location type
                 xyArray(elementTuple._1) = (x1, y1) //add to xyArray
-
-                //Build the graph
-                for (x2 <- x1 - 1 to x1 + 1) {
-                    for (y2 <- (y1 - 1 to y1 + 1)) {
-                        if ((x1 != x2 || y1 != y2) //check we are not dealing with the location itself
-                            && x2 >= 0 && y2 >= 0 && x2 < x && y2 < y) {
-                            //cgeck they are in the mdArray range
-                            val destination = mdArray(x2)(y2)
-
-
-                            //      println("ReGISTER "+xyArray(elementTuple._1) + " "+xyArray(destination))
-                            //Add to graph
-                            graph.addVertex(elementTuple._1)
-                            graph.addVertex(destination)
-                            graph.addEdge(elementTuple._1, destination)
-                        }
-                    }
-                }
             }
         }
-    }
-    }
+    }}
 
     val locationStates = mdArray.flatten.map {
         (_, new LocationState)
@@ -105,14 +85,15 @@ class LocationManagerActor(val x: Int, val y: Int, val noActors: Int) extends Ac
         actor
     }
 
-    def getSourounding(x1: Int, y1: Int, radius: Int, exclude: ActorRef): (Map[ActorRef, Int], Map[ActorRef, Int]) = {
+    def getSourounding(x1: Int, y1: Int, radius: Int, exclude: ActorRef): (Map[Coord, ActorRef], Map[Coord, Set[ActorRef]]) = {
         // println(x1+" "+y1+" "+radius)
-        var locations = collection.mutable.Map.empty[ActorRef, Int]
-        var actors = collection.mutable.Map.empty[ActorRef, Int]
+        var locations = collection.mutable.Map.empty[Coord, ActorRef]
+        var actors = collection.mutable.Map.empty[Coord, Set[ActorRef]]
 
         circleMembers(x, y, x1, y1, radius) { (curX, curY, distance) => {
-            locations(mdArray(curX)(curY)) = distance
-            actors ++= locationStates(mdArray(curX)(curY)).currentResidents.filter(_ != exclude).map { res => (res, distance)}
+            var coord = (curX, curY)
+            locations(coord) = mdArray(curX)(curY)
+            actors(coord) = locationStates(mdArray(curX)(curY)).currentResidents.filter(_ != exclude).toSet
         }
         }
 
@@ -145,40 +126,25 @@ class LocationManagerActor(val x: Int, val y: Int, val noActors: Int) extends Ac
         }
     }
 
-    def pathAndMove(from: ActorRef, to: ActorRef, actor: ActorRef) {
-        //  println("from loc "+xyArray(i))
-        //  println("to loc   "+xyArray(j))
-        val path = DijkstraShortestPath.findPathBetween(graph.asInstanceOf[Graph[Serializable, DefaultEdge]], from, to).filter(x => xyArray(graph.getEdgeTarget(x)) != xyArray(from))
-
-        //  path.foreach(i => {print(xyArray(graph.getEdgeTarget(i)))})
-        //  println
-
-        if (!path.isEmpty) {
-            //    path.foreach(i => {print(xyArray(graph.getEdgeTarget(i)))})
-            //    println
-            move(graph.getEdgeTarget(path(0)), sender);
-        }
-    }
-
     def receive = {
-        case MoveTowardActor(actor: ActorRef) => {
-            //println("MOVE TOWARD ACTOR "+xyArray(actor))
-            val fromlocation = actorsToActors.get(sender)
-            val toLocation: ActorRef = actorsToActors.get(actor) match {
-                case Some(x) => x
-                case None => {
-                    actor
-                }
-            }
-
-            fromlocation match {
-                case Some(i) =>
-                    pathAndMove(i,
-                        toLocation,
-                        sender)
-                case None => Unit
-            }
-        }
+//        case MoveTowardActor(actor: ActorRef) => {
+//            //println("MOVE TOWARD ACTOR "+xyArray(actor))
+//            val fromlocation = actorsToActors.get(sender)
+//            val toLocation: ActorRef = actorsToActors.get(actor) match {
+//                case Some(x) => x
+//                case None => {
+//                    actor
+//                }
+//            }
+//
+//            fromlocation match {
+//                case Some(i) =>
+//                    pathAndMove(i,
+//                        toLocation,
+//                        sender)
+//                case None => Unit
+//            }
+//        }
 
         case Die => {
             actorDataState.remove(sender)
@@ -209,7 +175,9 @@ class LocationManagerActor(val x: Int, val y: Int, val noActors: Int) extends Ac
             var x = xyTuple._1
             var y = xyTuple._2
 
-            sender ! GetSouroundingResponse.tupled(getSourounding(x, y, radius, sender))
+            val souroundingResponse = getSourounding(x, y, radius, sender)
+
+            sender ! GetSouroundingResponse(xyTuple, souroundingResponse._1, souroundingResponse._2)
 
         }
         case StatusResponse(status: ActorData) => {

@@ -8,9 +8,37 @@ import org.jgrapht.util.{FibonacciHeapNode, FibonacciHeap}
 /**
  * Created by gmiller on 16/05/14.
  */
-class Dijik {
+
+object Dijik {
 
     type Coord = (Int, Int);
+    val maxCoord = 1000
+
+    val coordMap: Map[Coord, List[Coord]] = Range(0, maxCoord+1).map(x => Range(0,maxCoord+1).map(y => (x,y))).flatten.map(a => (a, getSourounding(a, (maxCoord,maxCoord)))).toMap
+
+
+    def getSourounding(coord: Coord, max:Coord): List[Coord] = {
+        val coordOneMinusOne = coord._1 - 1
+        val coordOnePlusOne = coord._1 + 1
+        val coordTwoMinusOne = coord._2 - 1
+        val coordTwoPlusOne = coord._2 + 1
+
+        val listBuffer = new mutable.ListBuffer[Coord];
+
+        if (coordOneMinusOne >= 0 && coordTwoMinusOne >= 0) listBuffer append ((coordOneMinusOne, coordTwoMinusOne))
+        if (coordOneMinusOne >= 0) listBuffer append ((coordOneMinusOne, coord._2))
+        if (coordOneMinusOne >= 0 && coordTwoPlusOne <= max._2) listBuffer append ((coordOneMinusOne, coordTwoPlusOne))
+
+        if (coordOnePlusOne <= max._1 && coordTwoMinusOne >= 0) listBuffer append ((coordOnePlusOne, coordTwoMinusOne))
+        if (coordOnePlusOne <= max._1) listBuffer append ((coordOnePlusOne, coord._2))
+        if (coordOnePlusOne <= max._1 && coordTwoPlusOne <= max._2) listBuffer append ((coordOnePlusOne, coordTwoPlusOne))
+
+
+        if (coordTwoMinusOne >= 0) listBuffer append ((coord._1, coordTwoMinusOne))
+        if (coordTwoPlusOne <= max._2) listBuffer append ((coord._1, coordTwoPlusOne))
+
+        listBuffer.toList;
+    }
 
     def getNext(distanceFunc: (Coord, Coord) => Option[Int])(max: Coord)(start: Coord)(end: Coord): List[Coord] = {
 
@@ -27,29 +55,6 @@ class Dijik {
         def decreaseDistanceWithPrevious(coord: Coord, dist: Double, prev: Coord) = {
             decreaseDistance(coord, dist)
             previous.put(coord, prev)
-        }
-
-        def getSourounding(coord: Coord): List[Coord] = {
-            val coordOneMinusOne = coord._1 - 1
-            val coordOnePlusOne = coord._1 + 1
-            val coordTwoMinusOne = coord._2 - 1
-            val coordTwoPlusOne = coord._2 + 1
-
-            val listBuffer = new mutable.ListBuffer[Coord];
-
-            if (coordOneMinusOne >= 0 && coordTwoMinusOne >= 0) listBuffer append ((coordOneMinusOne, coordTwoMinusOne))
-            if (coordOneMinusOne >= 0) listBuffer append ((coordOneMinusOne, coord._2))
-            if (coordOneMinusOne >= 0 && coordTwoPlusOne <= max._2) listBuffer append ((coordOneMinusOne, coordTwoPlusOne))
-
-            if (coordOnePlusOne <= max._1 && coordTwoMinusOne >= 0) listBuffer append ((coordOnePlusOne, coordTwoMinusOne))
-            if (coordOnePlusOne <= max._1) listBuffer append ((coordOnePlusOne, coord._2))
-            if (coordOnePlusOne <= max._1 && coordTwoPlusOne <= max._2) listBuffer append ((coordOnePlusOne, coordTwoPlusOne))
-
-
-            if (coordTwoMinusOne >= 0) listBuffer append ((coord._1, coordTwoMinusOne))
-            if (coordTwoPlusOne <= max._2) listBuffer append ((coord._1, coordTwoPlusOne))
-
-            listBuffer.toList;
         }
 
 
@@ -70,13 +75,13 @@ class Dijik {
             prev = prevNode.getData
             val distanceToPrevious = prevNode.getKey
 
-            getSourounding(prev) foreach { current =>
+            coordMap(prev) foreach { current =>
                 distanceFunc(prev, current) match {
                     case Some(distancePrevToCurr) => {
 
 
                         val distanceToCurrViaPrev = distanceToPrevious + distancePrevToCurr
-                        println(prev, current, distancePrevToCurr, distanceToCurrViaPrev)
+
                         distance.get(current) match {
                             case Some(distanceToCurrNode) => {
                                 val distanceToCurr = distanceToCurrNode.getKey
@@ -87,6 +92,7 @@ class Dijik {
                             case None =>
                         }
                     }
+                    case None =>
 
                 }
             }

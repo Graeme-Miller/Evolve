@@ -139,7 +139,7 @@ class LocationManagerActor(val x:Int, val y:Int, val noActors:Int) extends Actor
   def pathAndMove(from: ActorRef, to: ActorRef, actor: ActorRef){
 //  println("from loc "+xyArray(i))
 //  println("to loc   "+xyArray(j))
-    val path = DijkstraShortestPath.findPathBetween(graph.asInstanceOf[Graph[Serializable,DefaultEdge]], from, to).filter(x => xyArray(graph.getEdgeTarget(x)) != xyArray(from))                  
+    val path = DijkstraShortestPath.findPathBetween(graph.asInstanceOf[Graph[Serializable,DefaultEdge]], from, to).filter(x => xyArray(graph.getEdgeTarget(x)) != xyArray(from))
                   
 //  path.foreach(i => {print(xyArray(graph.getEdgeTarget(i)))}) 
 //  println

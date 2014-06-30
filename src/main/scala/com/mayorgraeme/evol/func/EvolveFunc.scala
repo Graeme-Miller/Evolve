@@ -9,11 +9,11 @@ import scala.util.Random
 
 object EvolveFunc {
   
-  val maxX = 1
-  val maxY = 1
-  val startInhabitants = 1
-  val seedSproutTime = 10
-  val maxAge = 50
+  val maxX = 25
+  val maxY = 25
+  val startInhabitants = 4
+  val SEED_SPROUT_TIME = 2
+  val MAX_AGE = 6
   
   val rand = new Random()
   def percentChance(percent: Int) = rand.nextInt(100) < percent
@@ -35,31 +35,32 @@ object EvolveFunc {
   }
   
   def printWorld(world: World) = {
-    def printLine = println(" -" + "-" * maxY * 2)
-    printLine    
+    def getLine: String = " -" + "-" * maxY * 2 + "\n"
+    var newString = getLine    
     for(x <- Range(0, maxX)){
-      print("| ")
+      newString = newString + "| "
       for(y <- Range(0, maxY)){
-        printLocation(world(x)(y))
-        print(" ")
+        newString = newString + getLocationString(world(x)(y))
+        newString = newString + " "
       }
-      println("|")
+      newString = newString + "|\n"
     }    
-    printLine
+    newString = newString + getLine
+    println(newString)
   }
   
-  def printLocation(locationInformation: LocationInformation) = {
+  def getLocationString(locationInformation: LocationInformation):String = {
         
     if(locationInformation.inhabitants.isEmpty){
       locationInformation.locationType match {
-        case WATER => print("=")
-        case _ => print(" ")
+        case WATER => "~"
+        case _ => " "
       }
     } else {            
       locationInformation.inhabitants.toSeq(rand.nextInt(locationInformation.inhabitants.size)) match {
-        case Animal() => {print("A")}
-        case Seed(_, _) => {print("S")}
-        case Plant(_) => {print("P")}
+        case Animal() => "A"
+        case Seed(_, _) => "."
+        case Plant(_) => "*"
       }
     }
   }
@@ -81,7 +82,7 @@ object EvolveFunc {
   
   def fillWithRandom(world: World, createFunc: => Inhabitant): World= {
     
-    Range(0, startInhabitants+1).foldLeft(world)((world: World, x:Int) => {
+    Range(0, startInhabitants).foldLeft(world)((world: World, x:Int) => {
         val randX = rand.nextInt(maxX)
         val randY = rand.nextInt(maxY)
       
@@ -100,7 +101,7 @@ object EvolveFunc {
   
     override def transformWorld(world: World, locationInformation: LocationInformation): World = {
       currentAge = currentAge + 1
-      println(currentAge + " " +  sproutTime + " " + maxAge)
+      //println(currentAge,sproutTime, maxAge)
       if(currentAge>= (sproutTime)){
         replaceInWorld(world, locationInformation.x, locationInformation.y, this, new Plant(maxAge - sproutTime))
       }else {
@@ -110,26 +111,30 @@ object EvolveFunc {
     
   }
   case class Plant(maxAge:Int) extends Inhabitant {
-    val chanceOfPropogation = 10
+    val chanceOfPropogation = 50
     var currentAge = 0
+    val allowedLocationTypes = Set(SAND)
     
     override def transformWorld(world: World, locationInformation: LocationInformation): World = {
       currentAge = currentAge + 1
-      if(currentAge equals maxAge) {
+      
+      //println(currentAge, maxAge)
+      if(currentAge >= maxAge) {
         subFromWorld(world, locationInformation.x, locationInformation.y, this)
       } else if(percentChance(chanceOfPropogation)){
-        
+        //println("TREE TIME "+circleMembers[LocationInformation](world, locationInformation.x, locationInformation.y, 1).size)
         val spacesWithoutPlants: Seq[LocationInformation] = circleMembers[LocationInformation](world, locationInformation.x, locationInformation.y, 1).filter{g => 
-          g.equals(locationInformation) || g.inhabitants.forall{ g => 
+          allowedLocationTypes.contains(g.locationType) && !g.equals(locationInformation) && g.inhabitants.forall{ g => 
             g match {
               case Plant(_) => false
+              case Seed(_, _) => false
               case _ => true
             }
           }}
         
         if(!spacesWithoutPlants.isEmpty){
           val space = spacesWithoutPlants(rand.nextInt(spacesWithoutPlants.size))
-          addToWorld(world, locationInformation.x, locationInformation.y, new Seed(seedSproutTime, maxAge))
+          addToWorld(world, space.x, space.y, new Seed(SEED_SPROUT_TIME, MAX_AGE))
         } else {
           world
         }
@@ -143,11 +148,12 @@ object EvolveFunc {
   
   def main(args: Array[String]): Unit = {
         
-    var worldVar = fillWithRandom(world, Seed(seedSproutTime, maxAge))
+    var worldVar = fillWithRandom(world, Seed(SEED_SPROUT_TIME, MAX_AGE))
     while(true){
       Thread.sleep(1000)
       val worldFlat: Seq[LocationInformation] = worldVar.flatten
-      worldVar = worldFlat.foldLeft(world){(world: World, locationInformation: LocationInformation) => {
+      worldVar = worldFlat.foldLeft(worldVar){(world: World, locationInformation: LocationInformation) => {   
+          //println(locationInformation.inhabitants.size)
           locationInformation.inhabitants.foldLeft(world){(world: World, inhabitant: Inhabitant) =>
             inhabitant.transformWorld(world, locationInformation)
           }

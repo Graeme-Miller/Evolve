@@ -16,8 +16,8 @@ class LocationGenerator(x: Int, y:Int) {
   val percentChanceTree = 80
 
   //River Config
-  val minNoOfRivers = 2
-  val maxNoOfRivers = 2
+  val minNoOfRivers = 1
+  val maxNoOfRivers = 1
   val percentChanceChangeDirection = 10
   
   val map = Array.fill[LocationType](x,y)(SAND)

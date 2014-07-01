@@ -2,7 +2,7 @@
 package com.mayorgraeme.evol.func
 
 import com.mayorgraeme.evol.util.ArrayFunctions._
-import com.mayorgraeme.evol.LocationGenerator
+import com.mayorgraeme.evol.util.LocationGenerator
 import com.mayorgraeme.evol._
 import com.mayorgraeme.evol.data.java.LocationData
 import com.mayorgraeme.evol.data.java.SystemInfo

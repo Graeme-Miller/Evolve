@@ -1,4 +1,4 @@
-package com.mayorgraeme.evol
+package com.mayorgraeme.evol.util
 
 import scala.util.Random
 import com.mayorgraeme.evol.enums.LocationType._

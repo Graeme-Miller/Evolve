@@ -3,6 +3,7 @@ package com.mayorgraeme.evol.web
 
 import com.mayorgraeme.evol.func.EvolveFunc
 import com.mayorgraeme.evol.func.EvolveFunc._
+import com.mayorgraeme.evol.func.Seed
 
 object RestContext {
   val lock: Object = new Object
@@ -27,11 +28,9 @@ object RestContext {
       while(true){        
         Thread.sleep(1000)
         
-        println("in")
         val newWorld = transformWorld(getWorld)
         updateWorld(newWorld)
         printWorld(world)
-        println("out")
       }      
     }
   }

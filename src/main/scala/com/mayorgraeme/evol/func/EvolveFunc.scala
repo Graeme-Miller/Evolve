@@ -5,6 +5,7 @@ import com.mayorgraeme.evol.util.ArrayFunctions._
 import com.mayorgraeme.evol.LocationGenerator
 import com.mayorgraeme.evol._
 import com.mayorgraeme.evol.data.java.LocationData
+import com.mayorgraeme.evol.data.java.PlantData
 import com.mayorgraeme.evol.data.java.SystemInfo
 import com.mayorgraeme.evol.data.java.ActorData
 import com.mayorgraeme.evol.enums.LocationType._
@@ -107,7 +108,12 @@ object EvolveFunc {
   case class Animal extends Inhabitant
   
   case class Seed(sproutTime:Int, maxAge: Int) extends Inhabitant {
-    var currentAge:Int = 0
+    var currentAge:Int = 0    
+    val uuid = UUID.randomUUID.getMostSignificantBits
+    
+    override def getActorData(): ActorData = {
+      new PlantData(uuid, "seed", currentAge, 0, 0, 0, 0)
+    }
   
     override def transformWorld(world: World, locationInformation: LocationInformation): World = {
       currentAge = currentAge + 1
@@ -121,9 +127,14 @@ object EvolveFunc {
     
   }
   case class Plant(maxAge:Int) extends Inhabitant {
+    val uuid = UUID.randomUUID.getMostSignificantBits
     val chanceOfPropogation = 50
     var currentAge = 0
     val allowedLocationTypes = Set(WATER)
+    
+    override def getActorData(): ActorData = {
+      new PlantData(uuid, "plant", currentAge, chanceOfPropogation, 0, 0, 0)
+    }
     
     override def transformWorld(world: World, locationInformation: LocationInformation): World = {
       currentAge = currentAge + 1
@@ -133,7 +144,7 @@ object EvolveFunc {
         subFromWorld(world, locationInformation.x, locationInformation.y, this)
       } else if(percentChance(chanceOfPropogation)){
         //println("TREE TIME "+circleMembers[LocationInformation](world, locationInformation.x, locationInformation.y, 1).size)
-        val spacesWithoutPlants: Seq[LocationInformation] = circleMembers[LocationInformation](world, locationInformation.x, locationInformation.y, 4).filter{g => 
+        val spacesWithoutPlants: Seq[LocationInformation] = circleMembers[LocationInformation](world, locationInformation.x, locationInformation.y, 1).filter{g => 
           allowedLocationTypes.contains(g.locationType) && !g.equals(locationInformation) && g.inhabitants.forall{ g => 
             g match {
               case Plant(_) => false
@@ -171,7 +182,7 @@ object EvolveFunc {
   
   
   def transformWorld(worldParameter: World): World = {
-    val worldFlat: Seq[LocationInformation] = world.flatten
+    val worldFlat: Seq[LocationInformation] = worldParameter.flatten
     worldFlat.foldLeft(worldParameter){(world: World, locationInformation: LocationInformation) => {   
         //println(locationInformation.inhabitants.size)
         locationInformation.inhabitants.foldLeft(world){(world: World, inhabitant: Inhabitant) =>

@@ -68,8 +68,8 @@ object EvolveFunc {
     } else {            
       locationInformation.inhabitants.toSeq(rand.nextInt(locationInformation.inhabitants.size)) match {
         case Animal() => 'A'
-        case Seed(_, _) => '.'
-        case Plant(_) => '*'
+        case _: Seed => '.'
+        case _: Plant => '*'
       }
     }
   }

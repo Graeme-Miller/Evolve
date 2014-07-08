@@ -11,9 +11,8 @@ import scala.util.Random
 object RestContext {
   val lock: Object = new Object
   val rand = new Random
-  
-  
-  var world: World = fillWithRandom(EvolveFunc.world, Seed(10, 3, 50, 2, 4, {if(rand.nextInt(2) == 1) 'M' else 'F' }, Set(SAND), 25, 40));
+    
+  var world: World = fillWithRandom(EvolveFunc.world, Seed(10, 3, 50, 2, 4, {if(rand.nextInt(2) == 1) 'M' else 'F' }, Set(SAND), 15, 25));
   
   def updateWorld(newWorld: World) = {
     lock.synchronized {
@@ -31,7 +30,7 @@ object RestContext {
     def run(){
       println("start")
       while(true){        
-        Thread.sleep(100)
+        Thread.sleep(50)
         
         val newWorld = transformWorld(getWorld)
         updateWorld(newWorld)

@@ -8,20 +8,22 @@ public class PlantData extends ActorData {
 
     private final long uuid;
     private final String species;
-    private final int ageCurrent, vegativePropagation, plantSustanance, maxSize, growthRate;
+    private final char gender;
+    private final int maxAge, ageCurrent, sproutTime, size, seedRadius, spermRadius, chanceOfPropogation, chanceOfBreeding;
 
-    public PlantData(long uuid, String species, int ageCurrent, int vegativePropagation, int plantSustanance, int maxSize, int growthRate) {
+    public PlantData(long uuid, String species, char gender, int ageCurrent, int maxAge, int sproutTime, int size, int seedRadius, int spermRadius, int chanceOfPropogation, int chanceOfBreeding) {
         this.uuid = uuid;
         this.species = species;
-        this.vegativePropagation = vegativePropagation;
-        this.plantSustanance = plantSustanance;
-        this.maxSize = maxSize;
-        this.growthRate = growthRate;
+        this.gender = gender;
+        
         this.ageCurrent = ageCurrent;
-    }
-
-    public int getAgeCurrent() {
-        return ageCurrent;
+        this.maxAge = maxAge;
+        this.sproutTime = sproutTime;
+        this.size = size;
+        this.seedRadius = seedRadius;
+        this.spermRadius = spermRadius;
+        this.chanceOfPropogation = chanceOfPropogation;
+        this.chanceOfBreeding = chanceOfBreeding;
     }
 
     public long getUuid() {
@@ -32,19 +34,39 @@ public class PlantData extends ActorData {
         return species;
     }
 
-    public int getVegativePropagation() {
-        return vegativePropagation;
+    public char getGender() {
+        return gender;
     }
 
-    public int getPlantSustanance() {
-        return plantSustanance;
+    public int getAgeCurrent() {
+        return ageCurrent;
     }
 
-    public int getMaxSize() {
-        return maxSize;
+    public int getMaxAge() {
+        return maxAge;
     }
 
-    public int getGrowthRate() {
-        return growthRate;
+    public int getSproutTime() {
+        return sproutTime;
+    }
+
+    public int getSize() {
+        return size;
+    }
+
+    public int getSeedRadius() {
+        return seedRadius;
+    }
+
+    public int getSpermRadius() {
+        return spermRadius;
+    }
+
+    public int getChanceOfPropogation() {
+        return chanceOfPropogation;
+    }
+
+    public int getChanceOfBreeding() {
+        return chanceOfBreeding;
     }
 }

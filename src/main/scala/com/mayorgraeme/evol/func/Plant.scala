@@ -18,8 +18,8 @@ case class Plant(maxAge:Int, sproutTime:Int, size:Int, seedRadius:Int, spermRadi
   val rand = new Random()
     
   override def getActorData(): ActorData = {
-    new PlantData(uuid, "plant", currentAge, chanceOfPropogation, 0, 0, 0)
-  }
+    new PlantData(uuid, "plant", gender, currentAge, maxAge, sproutTime, size, seedRadius, spermRadius, chanceOfPropogation, chanceOfBreeding)
+  }//
   
   def breedPlants(plantOne: Plant, plantTwo: Plant): Seed = {
     val childMaxAge = geneticTransformation(plantOne.maxAge, plantTwo.maxAge)    

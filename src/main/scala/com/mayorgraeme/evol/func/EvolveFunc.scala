@@ -14,8 +14,8 @@ import scala.util.Random
 
 object EvolveFunc {
   
-  val maxX = 25
-  val maxY = 25
+  val maxX = 30
+  val maxY = 50
   val startInhabitants = 10
   val SEED_SPROUT_TIME = 2
   val MAX_AGE = 6

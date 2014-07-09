@@ -14,7 +14,12 @@ object Dijik {
     type Coord = (Int, Int);
     val maxCoord = 1000
 
-    val coordMap: Map[Coord, List[Coord]] = Range(0, maxCoord+1).map(x => Range(0,maxCoord+1).map(y => (x,y))).flatten.map(a => (a, getSourounding(a, (maxCoord,maxCoord)))).toMap
+   val coordMap: Map[Coord, List[Coord]] = (for{
+      x <- Range(0, maxCoord+1)
+      y <- Range(0, maxCoord+1)      
+    } yield {
+      (x,y) -> getSourounding((x,y), (maxCoord,maxCoord))
+    }) toMap
 
 
     def getSourounding(coord: Coord, max:Coord): List[Coord] = {

@@ -39,6 +39,12 @@ object EvolveFunc {
     }.toVector
   }
   
+  //Use this
+  def distanceToWater(arrayWorld: Seq[Seq[LocationType]], x:Int, y:Int): Int = everExpandingCircleSequence(arrayWorld, x, y).filter(_._1 == WATER)(0)._2
+    
+    
+  
+  
   def printWorld(world: World) = {
     def getLine: String = " -" + "-" * maxY * 2 + "\n"
     var newString = getLine    

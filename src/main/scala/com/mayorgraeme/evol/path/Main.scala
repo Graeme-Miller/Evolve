@@ -1,6 +1,7 @@
 
 package com.mayorgraeme.evol.path
 
+import com.mayorgraeme.evol.util.ArrayFunctions._
 
 object Main {
 
@@ -30,37 +31,41 @@ object Main {
 
 
     def main(args: Array[String]): Unit = {
-        val dijikGetNextDiagLonger = Dijik.getNext(getNextDiagLonger) _
-
-
-        val ret = dijikGetNextDiagLonger(max)(start)(end)
-        println(max, start, end)
-        println(ret)
-
-
-
-        Range(0, max._1 + 1).foreach(x => {
-            Range(0, max._2 + 1).foreach(y => {
-                val coord = (x, y);
-                print(" " + {
-                    if (coord == start) {
-                        'S'
-                    } else if (coord == end) {
-                        'E'
-                    } else if (mountains.contains((x, y))) {
-                        '^'
-                    } else if (ret.contains((x, y))) {
-                        '*'
-                    } else {
-                        '.'
-                    }
-                } + " ")
-            })
-
-            println
-        }
-
-        )
+      print(everExpandingCircleSequence(Seq(Seq(1,1,1,1), Seq(2,2,2,2), Seq(3,3,3,3), Seq(4,4,4,4), Seq(4,4,4,4)), 2, 2).take(10).toList)
+      
+    
+//    
+//        val dijikGetNextDiagLonger = Dijik.getNext(getNextDiagLonger) _
+//
+//
+//        val ret = dijikGetNextDiagLonger(max)(start)(end)
+//        println(max, start, end)
+//        println(ret)
+//
+//
+//
+//        Range(0, max._1 + 1).foreach(x => {
+//            Range(0, max._2 + 1).foreach(y => {
+//                val coord = (x, y);
+//                print(" " + {
+//                    if (coord == start) {
+//                        'S'
+//                    } else if (coord == end) {
+//                        'E'
+//                    } else if (mountains.contains((x, y))) {
+//                        '^'
+//                    } else if (ret.contains((x, y))) {
+//                        '*'
+//                    } else {
+//                        '.'
+//                    }
+//                } + " ")
+//            })
+//
+//            println
+//        }
+//
+//        )
     }
 
 }

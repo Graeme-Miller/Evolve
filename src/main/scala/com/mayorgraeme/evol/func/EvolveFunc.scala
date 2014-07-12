@@ -14,11 +14,11 @@ import scala.util.Random
 
 object EvolveFunc {
   
-  val maxX = 30
-  val maxY = 50
-  val startInhabitants = 0
+  val maxX = 40
+  val maxY = 60
+  val startInhabitants = 30
   
-  val MAX_DIST_TO_WATER = 15  
+  val MAX_DIST_TO_WATER = 8  
   
   val rand = new Random()
   def percentChance(percent: Int) = rand.nextInt(100) < percent

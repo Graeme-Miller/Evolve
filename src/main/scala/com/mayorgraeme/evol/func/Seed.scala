@@ -14,7 +14,7 @@ case class Seed(maxAge:Int, sproutTime:Int, size:Int, seedRadius:Int, spermRadiu
     val uuid = UUID.randomUUID.getMostSignificantBits
     
     override def getActorData(): ActorData = {
-      new PlantData(uuid, "seed", gender, currentAge, maxAge, sproutTime, size, seedRadius, spermRadius, chanceOfPropogation, chanceOfBreeding)
+      new PlantData(uuid, "seed", gender, currentAge, maxAge, sproutTime, size, seedRadius, spermRadius, chanceOfPropogation, chanceOfBreeding, waterNeed)
     }
   
     override def transformWorld(world: World, locationInformation: LocationInformation): World = {

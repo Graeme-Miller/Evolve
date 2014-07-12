@@ -18,15 +18,18 @@ case class Plant(maxAge:Int, sproutTime:Int, size:Int, seedRadius:Int, spermRadi
   var currentAge = sproutTime
   var currentSize: Double = 1
   val rand = new Random()
+  
+  val WATER_PERCENTAGE_SUFFER = 20
     
   override def getActorData(): ActorData = {
-    new PlantData(uuid, "plant", gender, currentAge, maxAge, sproutTime, size, seedRadius, spermRadius, chanceOfPropogation, chanceOfBreeding)
+    new PlantData(uuid, "plant", gender, currentAge, maxAge, sproutTime, size, seedRadius, spermRadius, chanceOfPropogation, chanceOfBreeding, waterNeed)
   }
   
   def breedPlants(plantOne: Plant, plantTwo: Plant): Seed = {
     val childMaxAge = geneticTransformation(plantOne.maxAge, plantTwo.maxAge)    
     val childChanceOfPropogation = geneticTransformation(plantOne.chanceOfPropogation, plantTwo.chanceOfPropogation)
     val childChanceOfBreeding = geneticTransformation(plantOne.chanceOfBreeding, plantTwo.chanceOfBreeding)
+    val waterNeed = geneticTransformation(plantOne.waterNeed, plantTwo.waterNeed)
     
     //println("BREED: MaxAge", childMaxAge, "ChanceOfBreeding", childChanceOfBreeding,  "ChanceOfPropagation", childChanceOfPropogation)
     
@@ -65,7 +68,7 @@ case class Plant(maxAge:Int, sproutTime:Int, size:Int, seedRadius:Int, spermRadi
          
       val sexPartners: Seq[Plant] = {
         for{inhabitants <- locsInRadius
-           inhabitant <- inhabitants.inhabitants                                               
+            inhabitant <- inhabitants.inhabitants                                               
         } yield (inhabitant)}.collect{case plant: Plant if plant.gender == getOpositeSex(gender) =>  plant}
                 
       if(!sexPartners.isEmpty && !freeSpaces.isEmpty){
@@ -82,14 +85,32 @@ case class Plant(maxAge:Int, sproutTime:Int, size:Int, seedRadius:Int, spermRadi
     
     
     def mature = {
-      //Math.min(locationInformation.waterDistance, 10)
-      Unit
+      if(waterNeed <= locationInformation.waterValue) {
+        currentSize = currentSize + 1
+      }else {
+        val waterShortage = waterNeed - locationInformation.waterValue        
+        currentSize = currentSize + (waterShortage / WATER_PERCENTAGE_SUFFER)
+      }
+    }
+    
+    def killedByWater: Boolean = {      
+      if(waterNeed <= locationInformation.waterValue) {
+        false
+      } else {        
+        val waterShortage = waterNeed - locationInformation.waterValue        
+        val waterShortageConstrained = Math.min(waterShortage, WATER_PERCENTAGE_SUFFER)        
+        val percentChanceOfDeath = ((waterShortageConstrained / WATER_PERCENTAGE_SUFFER) * 100).toInt
+        percentChance(percentChanceOfDeath)
+      }      
+    }
+    def shouldDie: Boolean = {
+      currentAge >= maxAge  || killedByWater
     }
     
     currentAge = currentAge + 1
       
     //println(currentAge, maxAge)
-    if(currentAge >= maxAge) {
+    if(shouldDie) {
       subFromWorld(world, locationInformation.x, locationInformation.y, this)
     } else if (currentSize < size) { //not yet matured
       mature

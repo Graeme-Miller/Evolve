@@ -18,7 +18,7 @@ object EvolveFunc {
   val maxY = 60
   val startInhabitants = 30
   
-  val MAX_DIST_TO_WATER = 8  
+  val MAX_DIST_TO_WATER = 20  
   
   val rand = new Random()
   def percentChance(percent: Int) = rand.nextInt(100) < percent

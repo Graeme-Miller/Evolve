@@ -30,7 +30,7 @@ object RestContext {
     def run(){
       println("start")
       while(true){        
-        Thread.sleep(500)
+        Thread.sleep(100)
         
         val newWorld = transformWorld(getWorld)
         updateWorld(newWorld)

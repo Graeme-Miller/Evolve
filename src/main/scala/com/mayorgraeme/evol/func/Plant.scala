@@ -22,14 +22,14 @@ case class Plant(maxAge:Int, sproutTime:Int, size:Int, seedRadius:Int, spermRadi
   val WATER_PERCENTAGE_SUFFER = 20
     
   override def getActorData(): ActorData = {
-    new PlantData(uuid, "plant", gender, currentAge, maxAge, sproutTime, size, seedRadius, spermRadius, chanceOfPropogation, chanceOfBreeding, waterNeed)
+    new PlantData(uuid, "plant", gender, maxAge, currentAge, sproutTime, size, seedRadius, spermRadius, chanceOfPropogation, chanceOfBreeding, waterNeed)
   }
   
-  def breedPlants(plantOne: Plant, plantTwo: Plant): Seed = {
-    val childMaxAge = geneticTransformation(plantOne.maxAge, plantTwo.maxAge)    
+  def breedPlants(plantOne: Plant, plantTwo: Plant): Seed = {    
     val childChanceOfPropogation = geneticTransformation(plantOne.chanceOfPropogation, plantTwo.chanceOfPropogation)
     val childChanceOfBreeding = geneticTransformation(plantOne.chanceOfBreeding, plantTwo.chanceOfBreeding)
     val waterNeed = geneticTransformation(plantOne.waterNeed, plantTwo.waterNeed)
+    val childMaxAge = Math.min(waterNeed, geneticTransformation(plantOne.maxAge, plantTwo.maxAge)) //remove this min, shouldnt need to constrain age
     
     //println("BREED: MaxAge", childMaxAge, "ChanceOfBreeding", childChanceOfBreeding,  "ChanceOfPropagation", childChanceOfPropogation)
     
@@ -96,6 +96,8 @@ case class Plant(maxAge:Int, sproutTime:Int, size:Int, seedRadius:Int, spermRadi
     def killedByWater: Boolean = {      
       if(waterNeed <= locationInformation.waterValue) {
         false
+      } else if (locationInformation.waterValue == 0) {
+        true 
       } else {        
         val waterShortage = waterNeed - locationInformation.waterValue        
         val waterShortageConstrained = Math.min(waterShortage, WATER_PERCENTAGE_SUFFER)        

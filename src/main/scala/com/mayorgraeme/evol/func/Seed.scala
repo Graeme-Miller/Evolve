@@ -9,7 +9,7 @@ import com.mayorgraeme.evol.data.java.ActorData
 import com.mayorgraeme.evol.enums.LocationType._
 import java.util.UUID
 
-case class Seed(maxAge:Int, sproutTime:Int, size:Int, seedRadius:Int, spermRadius: Int, gender: Char, allowedLocationTypes: Set[LocationType], chanceOfPropogation: Int, chanceOfBreeding: Int) extends Inhabitant {
+case class Seed(maxAge:Int, sproutTime:Int, size:Int, seedRadius:Int, spermRadius: Int, gender: Char, allowedLocationTypes: Set[LocationType], chanceOfPropogation: Int, chanceOfBreeding: Int, waterNeed:Int) extends Inhabitant {
     var currentAge:Int = 0    
     val uuid = UUID.randomUUID.getMostSignificantBits
     
@@ -21,7 +21,7 @@ case class Seed(maxAge:Int, sproutTime:Int, size:Int, seedRadius:Int, spermRadiu
       currentAge = currentAge + 1
       //println(currentAge,sproutTime, maxAge)
       if(currentAge>= (sproutTime)){
-        replaceInWorld(world, locationInformation.x, locationInformation.y, this, new Plant(maxAge, sproutTime, size, seedRadius, spermRadius, gender, allowedLocationTypes, chanceOfPropogation, chanceOfBreeding))
+        replaceInWorld(world, locationInformation.x, locationInformation.y, this, new Plant(maxAge, sproutTime, size, seedRadius, spermRadius, gender, allowedLocationTypes, chanceOfPropogation, chanceOfBreeding, waterNeed))
       }else {
         world
       }

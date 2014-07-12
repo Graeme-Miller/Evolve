@@ -13,9 +13,10 @@ import scala.util.Random
 import com.mayorgraeme.evol.util.SexUtil._
 
 
-case class Plant(maxAge:Int, sproutTime:Int, size:Int, seedRadius:Int, spermRadius: Int, gender: Char, allowedLocationTypes: Set[LocationType], chanceOfPropogation: Int, chanceOfBreeding: Int) extends Inhabitant {
+case class Plant(maxAge:Int, sproutTime:Int, size:Int, seedRadius:Int, spermRadius: Int, gender: Char, allowedLocationTypes: Set[LocationType], chanceOfPropogation: Int, chanceOfBreeding: Int, waterNeed:Int) extends Inhabitant {
   val uuid = UUID.randomUUID.getMostSignificantBits
   var currentAge = sproutTime
+  var currentSize: Double = 1
   val rand = new Random()
     
   override def getActorData(): ActorData = {
@@ -29,7 +30,7 @@ case class Plant(maxAge:Int, sproutTime:Int, size:Int, seedRadius:Int, spermRadi
     
     //println("BREED: MaxAge", childMaxAge, "ChanceOfBreeding", childChanceOfBreeding,  "ChanceOfPropagation", childChanceOfPropogation)
     
-    new Seed(childMaxAge, sproutTime, size, seedRadius, spermRadius, {if(rand.nextInt(2) == 1) 'M' else 'F' }, allowedLocationTypes, childChanceOfPropogation, childChanceOfBreeding)
+    new Seed(childMaxAge, sproutTime, size, seedRadius, spermRadius, {if(rand.nextInt(2) == 1) 'M' else 'F' }, allowedLocationTypes, childChanceOfPropogation, childChanceOfBreeding, waterNeed)
   }
   
   def geneticTransformation(first: Int, second: Int): Int = {
@@ -52,7 +53,7 @@ case class Plant(maxAge:Int, sproutTime:Int, size:Int, seedRadius:Int, spermRadi
         
       if(!spacesWithoutPlants.isEmpty){
         val space = spacesWithoutPlants(rand.nextInt(spacesWithoutPlants.size))
-        addToWorld(world, space.x, space.y, new Seed(maxAge, sproutTime, size, seedRadius, spermRadius, gender, allowedLocationTypes, chanceOfPropogation, chanceOfBreeding))
+        addToWorld(world, space.x, space.y, new Seed(maxAge, sproutTime, size, seedRadius, spermRadius, gender, allowedLocationTypes, chanceOfPropogation, chanceOfBreeding, waterNeed))
       } else {
         world
       }
@@ -79,11 +80,20 @@ case class Plant(maxAge:Int, sproutTime:Int, size:Int, seedRadius:Int, spermRadi
       }
     }    
     
+    
+    def mature = {
+      //Math.min(locationInformation.waterDistance, 10)
+      Unit
+    }
+    
     currentAge = currentAge + 1
       
     //println(currentAge, maxAge)
     if(currentAge >= maxAge) {
       subFromWorld(world, locationInformation.x, locationInformation.y, this)
+    } else if (currentSize < size) { //not yet matured
+      mature
+      world
     } else if (percentChance(chanceOfBreeding)){ 
       haveSex
     }else if(percentChance(chanceOfPropogation)){
@@ -97,8 +107,8 @@ case class Plant(maxAge:Int, sproutTime:Int, size:Int, seedRadius:Int, spermRadi
     locationInformation.filter{g => 
       allowedLocationTypes.contains(g.locationType) && !g.equals(locationInformation) && g.inhabitants.forall{ g => 
         g match {
-          case Plant(_,_,_,_,_,_,_,_,_) => false
-          case Seed(_,_,_,_,_,_,_,_,_) => false
+          case plant: Plant => false
+          case seed: Seed => false
           case _ => true
         }
       }}

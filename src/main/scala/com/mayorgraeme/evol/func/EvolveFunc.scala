@@ -16,14 +16,14 @@ object EvolveFunc {
   
   val maxX = 30
   val maxY = 50
-  val startInhabitants = 10
-  val SEED_SPROUT_TIME = 2
-  val MAX_AGE = 6
+  val startInhabitants = 0
+  
+  val MAX_DIST_TO_WATER = 15  
   
   val rand = new Random()
   def percentChance(percent: Int) = rand.nextInt(100) < percent
   
-  case class LocationInformation(val locationType: LocationType, uuid:Long, x:Int, y:Int, waterDistance:Int, inhabitants: Set[Inhabitant])
+  case class LocationInformation(val locationType: LocationType, uuid:Long, x:Int, y:Int, waterValue:Int, inhabitants: Set[Inhabitant])
   type World = Seq[Seq[LocationInformation]]
   
   val world: World = {
@@ -34,13 +34,19 @@ object EvolveFunc {
       val x = xEntry._2
       xEntry._1.zipWithIndex.map { yEntry =>
         val y = yEntry._2
-        new LocationInformation(yEntry._1, UUID.randomUUID.getMostSignificantBits,  x, y, distanceToWater(arrayWorld, x, y), Set())
+        new LocationInformation(yEntry._1, UUID.randomUUID.getMostSignificantBits,  x, y, getWaterValue(arrayWorld, x, y), Set())
       }.toVector
     }.toVector
   }
   
   //Use this
-  def distanceToWater(arrayWorld: Seq[Seq[LocationType]], x:Int, y:Int): Int = everExpandingCircleSequence(arrayWorld, x, y).filter(_._1 == WATER)(0)._2
+  def getWaterValue(arrayWorld: Seq[Seq[LocationType]], x:Int, y:Int): Int = {
+    val distanceToWater = everExpandingCircleSequence(arrayWorld, x, y).filter(_._1 == WATER)(0)._2
+    val constrainedDist = Math.min(distanceToWater, MAX_DIST_TO_WATER)
+    val invertedDist: Double = MAX_DIST_TO_WATER - constrainedDist
+    
+    ((invertedDist/MAX_DIST_TO_WATER) * 100).toInt
+  }
     
     
   
@@ -85,7 +91,7 @@ object EvolveFunc {
   def changeWorld(world: World, x: Int, y: Int, setChanger :Set[Inhabitant] => Set[Inhabitant]): World = {
     
     val oldInfo = world(x)(y)
-    val newInfo = new LocationInformation(oldInfo.locationType, oldInfo.uuid, oldInfo.x, oldInfo.y, oldInfo.waterDistance, setChanger(oldInfo.inhabitants))    
+    val newInfo = new LocationInformation(oldInfo.locationType, oldInfo.uuid, oldInfo.x, oldInfo.y, oldInfo.waterValue, setChanger(oldInfo.inhabitants))    
     updateWorld(world, x, y, newInfo)
   }
   
@@ -118,7 +124,7 @@ object EvolveFunc {
     for (locationInformation <- world.flatten){
       val x = locationInformation.x
       val y = locationInformation.y
-      array(x)(y).add(new LocationData(getLocationChar(locationInformation), locationInformation.uuid, locationInformation.waterDistance))
+      array(x)(y).add(new LocationData(getLocationChar(locationInformation), locationInformation.uuid, locationInformation.waterValue))
         
       for(inhabitant <- locationInformation.inhabitants){
         array(x)(y).add(inhabitant.getActorData)

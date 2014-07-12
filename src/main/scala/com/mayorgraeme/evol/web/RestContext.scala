@@ -12,7 +12,7 @@ object RestContext {
   val lock: Object = new Object
   val rand = new Random
     
-  var world: World = fillWithRandom(EvolveFunc.world, Seed(10, 3, 50, 2, 4, {if(rand.nextInt(2) == 1) 'M' else 'F' }, Set(SAND), 15, 25));
+  var world: World = fillWithRandom(EvolveFunc.world, Seed(10, 3, 50, 2, 4, {if(rand.nextInt(2) == 1) 'M' else 'F' }, Set(SAND), 15, 25, 60));
   
   def updateWorld(newWorld: World) = {
     lock.synchronized {

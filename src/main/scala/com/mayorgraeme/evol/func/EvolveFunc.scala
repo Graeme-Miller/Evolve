@@ -16,7 +16,7 @@ object EvolveFunc {
   
   val maxX = 30
   val maxY = 50
-  val startInhabitants = 0
+  val startInhabitants = 10
   val SEED_SPROUT_TIME = 2
   val MAX_AGE = 6
   

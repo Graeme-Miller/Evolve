@@ -10,6 +10,7 @@ import com.mayorgraeme.evol.data.java.ActorData
 import com.mayorgraeme.evol.enums.LocationType._
 import java.util.UUID
 import scala.util.Random
+import com.mayorgraeme.evol.util.SexUtil._
 
 
 case class Plant(maxAge:Int, sproutTime:Int, size:Int, seedRadius:Int, spermRadius: Int, gender: Char, allowedLocationTypes: Set[LocationType], chanceOfPropogation: Int, chanceOfBreeding: Int) extends Inhabitant {
@@ -19,7 +20,7 @@ case class Plant(maxAge:Int, sproutTime:Int, size:Int, seedRadius:Int, spermRadi
     
   override def getActorData(): ActorData = {
     new PlantData(uuid, "plant", gender, currentAge, maxAge, sproutTime, size, seedRadius, spermRadius, chanceOfPropogation, chanceOfBreeding)
-  }//
+  }
   
   def breedPlants(plantOne: Plant, plantTwo: Plant): Seed = {
     val childMaxAge = geneticTransformation(plantOne.maxAge, plantTwo.maxAge)    
@@ -45,25 +46,27 @@ case class Plant(maxAge:Int, sproutTime:Int, size:Int, seedRadius:Int, spermRadi
   }
   
   override def transformWorld(world: World, locationInformation: LocationInformation): World = {
-    currentAge = currentAge + 1
-      
-    //println(currentAge, maxAge)
-    if(currentAge >= maxAge) {
-      subFromWorld(world, locationInformation.x, locationInformation.y, this)
-    } else if (gender == 'M' && percentChance(chanceOfBreeding)){ 
-      val locsInRadius = circleMembers[LocationInformation](world, locationInformation.x, locationInformation.y, spermRadius)
-      
+    def propagate = {
+      //println("TREE TIME "+circleMembers[LocationInformation](world, locationInformation.x, locationInformation.y, 1).size)
+      val spacesWithoutPlants = getFreeSpaces(circleMembers[LocationInformation](world, locationInformation.x, locationInformation.y, seedRadius))
+        
+      if(!spacesWithoutPlants.isEmpty){
+        val space = spacesWithoutPlants(rand.nextInt(spacesWithoutPlants.size))
+        addToWorld(world, space.x, space.y, new Seed(maxAge, sproutTime, size, seedRadius, spermRadius, gender, allowedLocationTypes, chanceOfPropogation, chanceOfBreeding))
+      } else {
+        world
+      }
+    }
+    
+    def haveSex = {
+      val locsInRadius = circleMembers[LocationInformation](world, locationInformation.x, locationInformation.y, spermRadius)      
       val freeSpaces = getFreeSpaces(locsInRadius)
-      
-      val inhabitants: Seq[Inhabitant] = for{inhabitants <- locsInRadius
-                                             inhabitant <- inhabitants.inhabitants
-                                             if(inhabitant match {
-            case Plant(_,_,_,_,_,'F',_,_,_) => true
-            case _ => false                 
-          })} yield (inhabitant)
-      
-      val sexPartners: Seq[Plant] = inhabitants.collect{case plant: Plant if plant.gender == 'F' =>  plant}
-          
+         
+      val sexPartners: Seq[Plant] = {
+        for{inhabitants <- locsInRadius
+           inhabitant <- inhabitants.inhabitants                                               
+        } yield (inhabitant)}.collect{case plant: Plant if plant.gender == getOpositeSex(gender) =>  plant}
+                
       if(!sexPartners.isEmpty && !freeSpaces.isEmpty){
         val sexPartner = sexPartners(rand.nextInt(sexPartners.size))
         val child = breedPlants(sexPartner, this)
@@ -74,16 +77,17 @@ case class Plant(maxAge:Int, sproutTime:Int, size:Int, seedRadius:Int, spermRadi
       }else{
         world
       }
+    }    
+    
+    currentAge = currentAge + 1
+      
+    //println(currentAge, maxAge)
+    if(currentAge >= maxAge) {
+      subFromWorld(world, locationInformation.x, locationInformation.y, this)
+    } else if (percentChance(chanceOfBreeding)){ 
+      haveSex
     }else if(percentChance(chanceOfPropogation)){
-      //println("TREE TIME "+circleMembers[LocationInformation](world, locationInformation.x, locationInformation.y, 1).size)
-      val spacesWithoutPlants = getFreeSpaces(circleMembers[LocationInformation](world, locationInformation.x, locationInformation.y, seedRadius))
-        
-      if(!spacesWithoutPlants.isEmpty){
-        val space = spacesWithoutPlants(rand.nextInt(spacesWithoutPlants.size))
-        addToWorld(world, space.x, space.y, new Seed(maxAge, sproutTime, size, seedRadius, spermRadius, gender, allowedLocationTypes, chanceOfPropogation, chanceOfBreeding))
-      } else {
-        world
-      }
+      propagate
     } else {
       world
     }

@@ -20,65 +20,71 @@ class LocationGenerator(x: Int, y:Int) {
   val maxNoOfRivers = 1
   val percentChanceChangeDirection = 10
   
-  val map = Array.fill[LocationType](x,y)(SAND)
+  val map: Seq[Seq[LocationType]] = getMap
   
-  //Algorithm
-  val noOfForrests = getInBetween(minNoOfForrests, maxNoOfForrests)
-  if(noOfForrests > 0){
-    for(x <- 0 to noOfForrests){
-      addAForrest
+  def getMap: Seq[Seq[LocationType]] = {
+    val map = Array.fill[LocationType](x,y)(SAND)
+    
+    def getInBetween(min: Int, max:Int): Int = {
+      val dif = max - min;
+      if(dif > 0){
+        r.nextInt(max - min) + min - 1 ;
+      }else{
+        min
+      }
     }
-  }
-  val noOfRivers = getInBetween(minNoOfRivers, maxNoOfRivers)
-  if(noOfRivers > 0){
-    for(x <- 0 to noOfRivers){
-      addARiver
-    }
-  }
-  
-  def getInBetween(min: Int, max:Int): Int = {
-    val dif = max - min;
-    if(dif > 0){
-      r.nextInt(max - min) + min - 1 ;
-    }else{
-      min
-    }
-  }
   
   
-  //functions
-  def addAForrest = {
-    val centreX = r.nextInt(x);
-    val centreY = r.nextInt(y);
-    val size = getInBetween(forrestMinRadius, forrestMaxRadius)
-    circleMembers(x, y, centreX, centreY, size){ (curX, curY, distance) => {
-        if(r.nextInt(100) <= percentChanceTree){
-          map(curX)(curY) = SAND;
+    //functions
+    def addAForrest = {
+      val centreX = r.nextInt(x);
+      val centreY = r.nextInt(y);
+      val size = getInBetween(forrestMinRadius, forrestMaxRadius)
+      circleMembers(x, y, centreX, centreY, size){ (curX, curY, distance) => {
+          if(r.nextInt(100) <= percentChanceTree){
+            map(curX)(curY) = SAND;
+          }
         }
       }
     }
-  }
   
-  def addARiver = {
-    var curX = r.nextInt(x)
-    var curY = 0;
-    var direction = 0;
+    def addARiver = {
+      var curX = r.nextInt(x)
+      var curY = 0;
+      var direction = 0;
     
-    while(curY != y){
-      map(Math.max(curX-1, 0))(curY) = WATER;
-      map(curX)(curY) = WATER;
-      map(Math.min(curX+1, x-1))(curY) = WATER;
+      while(curY != y){
+        map(Math.max(curX-1, 0))(curY) = WATER;
+        map(curX)(curY) = WATER;
+        map(Math.min(curX+1, x-1))(curY) = WATER;
     
-      if(r.nextInt(100) <= percentChanceChangeDirection){
-        direction = r.nextInt(3)
-      }
+        if(r.nextInt(100) <= percentChanceChangeDirection){
+          direction = r.nextInt(3)
+        }
       
-      direction match {
-        case 0 => curX = Math.max(0, curX-1);
-        case 1 => curX = Math.min(curX+1, x-1);
-        case _ => 
+        direction match {
+          case 0 => curX = Math.max(0, curX-1);
+          case 1 => curX = Math.min(curX+1, x-1);
+          case _ => 
+        }
+        curY = curY+1
       }
-      curY = curY+1
     }
+  
+    //Algorithm
+    val noOfForrests = getInBetween(minNoOfForrests, maxNoOfForrests)
+    if(noOfForrests > 0){
+      for(x <- 0 to noOfForrests){
+        addAForrest
+      }
+    }
+    val noOfRivers = getInBetween(minNoOfRivers, maxNoOfRivers)
+    if(noOfRivers > 0){
+      for(x <- 0 to noOfRivers){
+        addARiver
+      }
+    }
+    
+    map.map(_.toSeq).toSeq      
   }
 }

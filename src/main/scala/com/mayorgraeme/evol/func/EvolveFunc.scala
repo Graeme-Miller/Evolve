@@ -16,25 +16,25 @@ object EvolveFunc {
   
   val maxX = 30
   val maxY = 50
-  val startInhabitants = 10
+  val startInhabitants = 0
   val SEED_SPROUT_TIME = 2
   val MAX_AGE = 6
   
   val rand = new Random()
   def percentChance(percent: Int) = rand.nextInt(100) < percent
   
-  case class LocationInformation(val locationType: LocationType, uuid:Long, x:Int, y:Int, inhabitants: Set[Inhabitant])
+  case class LocationInformation(val locationType: LocationType, uuid:Long, x:Int, y:Int, waterDistance:Int, inhabitants: Set[Inhabitant])
   type World = Seq[Seq[LocationInformation]]
   
   val world: World = {
-    val arrayWorld = new LocationGenerator(maxX, maxY).map.clone
+    val arrayWorld = new LocationGenerator(maxX, maxY).map
    
   
     arrayWorld.zipWithIndex.map{ xEntry => 
       val x = xEntry._2
       xEntry._1.zipWithIndex.map { yEntry =>
         val y = yEntry._2
-        new LocationInformation(yEntry._1, UUID.randomUUID.getMostSignificantBits,  x, y, Set())
+        new LocationInformation(yEntry._1, UUID.randomUUID.getMostSignificantBits,  x, y, distanceToWater(arrayWorld, x, y), Set())
       }.toVector
     }.toVector
   }
@@ -85,7 +85,7 @@ object EvolveFunc {
   def changeWorld(world: World, x: Int, y: Int, setChanger :Set[Inhabitant] => Set[Inhabitant]): World = {
     
     val oldInfo = world(x)(y)
-    val newInfo = new LocationInformation(oldInfo.locationType, oldInfo.uuid, oldInfo.x, oldInfo.y, setChanger(oldInfo.inhabitants))    
+    val newInfo = new LocationInformation(oldInfo.locationType, oldInfo.uuid, oldInfo.x, oldInfo.y, oldInfo.waterDistance, setChanger(oldInfo.inhabitants))    
     updateWorld(world, x, y, newInfo)
   }
   
@@ -118,7 +118,7 @@ object EvolveFunc {
     for (locationInformation <- world.flatten){
       val x = locationInformation.x
       val y = locationInformation.y
-      array(x)(y).add(new LocationData(getLocationChar(locationInformation), locationInformation.uuid))
+      array(x)(y).add(new LocationData(getLocationChar(locationInformation), locationInformation.uuid, locationInformation.waterDistance))
         
       for(inhabitant <- locationInformation.inhabitants){
         array(x)(y).add(inhabitant.getActorData)

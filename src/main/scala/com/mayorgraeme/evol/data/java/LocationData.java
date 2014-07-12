@@ -8,10 +8,12 @@ public class LocationData extends ActorData {
 
     private final char locationType;
     private final Long uuid;
+    private final Long distanceToWater;
 
-    public LocationData(char locationType, Long uuid) {
+    public LocationData(char locationType, Long uuid, Long distanceToWater) {
         this.locationType = locationType;
         this.uuid = uuid;
+        this.distanceToWater = distanceToWater;
     }
 
     public char getLocationType() {
@@ -20,5 +22,9 @@ public class LocationData extends ActorData {
 
     public Long getUuid() {
         return uuid;
+    }
+
+    public Long getDistanceToWater() {
+        return distanceToWater;
     }
 }

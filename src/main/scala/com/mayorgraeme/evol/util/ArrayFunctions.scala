@@ -40,7 +40,6 @@ object ArrayFunctions {
     
     val minY1 = (centreY-radius).max(0)
     val maxY1 = (centreY+radius).min(maxY-1)    
-    println("circleMembersBase")
     
     for{curX <- (minX1 to maxX1)
         curY <- (minY1 to maxY1)

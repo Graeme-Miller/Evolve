@@ -10,6 +10,7 @@ import com.mayorgraeme.evol.data.java.ActorData
 import com.mayorgraeme.evol.enums.LocationType._
 import java.util.ArrayList
 import java.util.UUID
+import scala.collection.immutable.HashMap
 import scala.util.Random
 
 object EvolveFunc {
@@ -79,7 +80,6 @@ object EvolveFunc {
       getLocationChar(locationInformation)
     } else {            
       locationInformation.inhabitants.toSeq(rand.nextInt(locationInformation.inhabitants.size)) match {
-        case Animal() => 'A'
         case _: Seed => '.'
         case _: Plant => '*'
       }
@@ -115,8 +115,10 @@ object EvolveFunc {
   abstract class Inhabitant {
     def transformWorld(world: World, locationInformation: LocationInformation): World = world
     def getActorData(): ActorData = null
+    def canBreed(inhabitant: Inhabitant): Boolean
+    def species: String
+    def withUpdatedSpecies(species: String): Inhabitant
   }
-  case class Animal extends Inhabitant
  
   
   def convertWorldToSystemInfo(world: World): SystemInfo= {
@@ -134,16 +136,73 @@ object EvolveFunc {
     new SystemInfo(maxX, maxY, array)
   }
   
+  def getAllInhab(worldParameter: World): Seq[InhabitantLocation] =  for{locInfo <- worldParameter.flatten; inhab <- locInfo.inhabitants} yield {(inhab,locInfo)}
+    
+  type InhabitantLocation = (Inhabitant, LocationInformation)
+  
+  def updateSpecies(worldParameter: World): World = {
+    
+    
+    //gets all inhabitants, creates a map of species to InhabLocation
+    //TODO: groupby?
+    def extractSpecies: Map[String,Set[InhabitantLocation]] = {
+      val map = HashMap[String, Set[InhabitantLocation]]()
+      getAllInhab(worldParameter).foldLeft(map){ (foldMap, inhabitantLocation) =>
+        val spec = inhabitantLocation._1.species
+        if(foldMap.contains(spec)){
+          map.updated(spec, foldMap(spec) + inhabitantLocation) //add to map
+        } else{
+          map + ((spec, Set(inhabitantLocation)))
+        }
+      }           
+    }
+    
+    //TODO: add parents
+    def splitPartners(inhabLoc: InhabitantLocation, potentialPartners: Seq[InhabitantLocation]): (Seq[InhabitantLocation], Seq[InhabitantLocation]) = {
+      potentialPartners.partition(x => inhabLoc._1.canBreed(x._1))                
+    }
+    
+    //TODO: This is worong, need to map and look at more than imediate node (boy girl problem)
+    def splitIntoBreedableSets(initialSet: Set[InhabitantLocation]): Set[Set[InhabitantLocation]] = {
+      var unseenInhab = initialSet.toVector
+      var setOfSets = Set[Set[InhabitantLocation]]()
+      
+      while(!unseenInhab.isEmpty){
+        val inhab = unseenInhab.head
+        unseenInhab = unseenInhab.tail
+        
+        val (breed, nonBreed) = splitPartners(inhab, unseenInhab)
+        setOfSets = setOfSets + (breed.toSet+inhab)
+        unseenInhab = nonBreed.toVector       
+      }
+      
+      setOfSets
+    }
+    
+    var variableWorld = worldParameter;
+    for((species, speciesSet) <- extractSpecies){
+      val breedableSets = splitIntoBreedableSets(speciesSet)
+      if(breedableSets.size > 1){
+        for{(inhabLocationSet, index) <- breedableSets.zipWithIndex
+            inhabLoc <- inhabLocationSet}{
+          val(inhab, loc) = inhabLoc
+          variableWorld = replaceInWorld(variableWorld, loc.x, loc.y, inhab, inhab.withUpdatedSpecies(inhab.species+index.toString))          
+        }
+      }      
+    }
+    
+    variableWorld
+  }
   
   def transformWorld(worldParameter: World): World = {
     val worldFlat: Seq[LocationInformation] = worldParameter.flatten
-    worldFlat.foldLeft(worldParameter){(world: World, locationInformation: LocationInformation) => {   
-        //println(locationInformation.inhabitants.size)
-        locationInformation.inhabitants.foldLeft(world){(world: World, inhabitant: Inhabitant) =>
-          inhabitant.transformWorld(world, locationInformation)
+    updateSpecies{worldFlat.foldLeft(worldParameter){(world: World, locationInformation: LocationInformation) => {   
+          //println(locationInformation.inhabitants.size)
+          locationInformation.inhabitants.foldLeft(world){(world: World, inhabitant: Inhabitant) =>
+            inhabitant.transformWorld(world, locationInformation)
+          }
         }
       }
     }
   }
-
 }

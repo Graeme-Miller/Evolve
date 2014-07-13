@@ -14,8 +14,8 @@ object RestContext {
   val rand = new Random
     
   var world: World = {
-    val dasUberParent = Plant(1, 10, 3, 1, 2, 4, {if(rand.nextInt(2) == 1) 'M' else 'F' }, Set(SAND), 15, 25, 60, Queue[Plant]())
-    fillWithRandom(EvolveFunc.world, Seed(1, 10, 3, 1, 2, 4, {if(rand.nextInt(2) == 1) 'M' else 'F' }, Set(SAND), 15, 25, 60, Queue[Plant](dasUberParent)));
+    val dasUberParent = Plant("1", 10, 3, 1, 2, 4, {if(rand.nextInt(2) == 1) 'M' else 'F' }, Set(SAND), 15, 25, 60, Queue[Plant]())
+    fillWithRandom(EvolveFunc.world, Seed("1", 10, 3, 1, 2, 4, {if(rand.nextInt(2) == 1) 'M' else 'F' }, Set(SAND), 15, 25, 60, Queue[Plant](dasUberParent)));
   }
   
   def updateWorld(newWorld: World) = {

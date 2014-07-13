@@ -7,13 +7,14 @@ package com.mayorgraeme.evol.data.java;
 public class PlantData extends ActorData {
 
     private final long uuid;
-    private final String species;
+    private final String species, clazz;
     private final char gender;
     private final int maxAge, ageCurrent, sproutTime, size, seedRadius, spermRadius, chanceOfPropogation, chanceOfBreeding, waterNeed;
 
-    public PlantData(long uuid, String species, char gender, int maxAge, int ageCurrent, int sproutTime, int size, int seedRadius, int spermRadius, int chanceOfPropogation, int chanceOfBreeding, int waterNeed) {
+    public PlantData(long uuid, String species, String clazz, char gender, int maxAge, int ageCurrent, int sproutTime, int size, int seedRadius, int spermRadius, int chanceOfPropogation, int chanceOfBreeding, int waterNeed) {
         this.uuid = uuid;
         this.species = species;
+        this.clazz = clazz;
         this.gender = gender;
         this.maxAge = maxAge;
         this.ageCurrent = ageCurrent;
@@ -32,6 +33,10 @@ public class PlantData extends ActorData {
 
     public String getSpecies() {
         return species;
+    }
+
+    public String getClazz() {
+        return clazz;
     }
 
     public char getGender() {
@@ -73,4 +78,7 @@ public class PlantData extends ActorData {
     public int getWaterNeed() {
         return waterNeed;
     }
+
+    
+    
 }

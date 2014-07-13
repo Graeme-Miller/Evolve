@@ -15,7 +15,7 @@ import com.mayorgraeme.evol.util.SexUtil._
 import com.mayorgraeme.evol.util.BoundedParentQueue._
 
 
-case class Plant(species: Int, maxAge:Int, sproutTime:Int, size:Int, seedRadius:Int, spermRadius: Int, gender: Char, allowedLocationTypes: Set[LocationType], chanceOfPropogation: Int, chanceOfBreeding: Int, waterNeed:Int, parents: Queue[Plant]) extends Inhabitant {
+case class Plant(species: String, maxAge:Int, sproutTime:Int, size:Int, seedRadius:Int, spermRadius: Int, gender: Char, allowedLocationTypes: Set[LocationType], chanceOfPropogation: Int, chanceOfBreeding: Int, waterNeed:Int, parents: Queue[Plant]) extends Inhabitant {
   val uuid = UUID.randomUUID.getMostSignificantBits
   var currentAge = sproutTime
   var currentSize: Double = 1
@@ -25,10 +25,17 @@ case class Plant(species: Int, maxAge:Int, sproutTime:Int, size:Int, seedRadius:
   val NUM_PARENTS = 20
     
   override def getActorData(): ActorData = {
-    new PlantData(uuid, "plant", gender, maxAge, currentAge, sproutTime, size, seedRadius, spermRadius, chanceOfPropogation, chanceOfBreeding, waterNeed)
+    new PlantData(uuid, species, "plant", gender, maxAge, currentAge, sproutTime, size, seedRadius, spermRadius, chanceOfPropogation, chanceOfBreeding, waterNeed)
   }
   
-  def canBreed(plantOne: Plant, plantTwo: Plant): Boolean = plantOne.gender != plantTwo.gender && plantOne.species == plantTwo.species
+  override def withUpdatedSpecies(newSpecies: String): Inhabitant = new Plant(newSpecies, maxAge, sproutTime, size, seedRadius, spermRadius, gender, allowedLocationTypes, chanceOfPropogation, chanceOfBreeding, waterNeed, parents)
+  
+  override def canBreed(other: Inhabitant): Boolean = {
+    other match {
+      case otherPlant: Plant => this.gender != otherPlant.gender && this.species == otherPlant.species 
+      case _ => false  
+    }      
+  }
   
   def breedPlants(plantOne: Plant, plantTwo: Plant): Seed = {    
     val childChanceOfPropogation = geneticTransformation(plantOne.chanceOfPropogation, plantTwo.chanceOfPropogation)
@@ -79,7 +86,7 @@ case class Plant(species: Int, maxAge:Int, sproutTime:Int, size:Int, seedRadius:
       val sexPartners: Seq[Plant] = {
         for{inhabitants <- locsInRadius
             inhabitant <- inhabitants.inhabitants                                               
-        } yield (inhabitant)}.toStream.collect{case plant: Plant if(canBreed(this, plant)) =>  plant}
+        } yield (inhabitant)}.toStream.collect{case plant: Plant if(canBreed(plant)) =>  plant}
                 
       if(!sexPartners.isEmpty && !freeSpaces.isEmpty){
         val sexPartner = sexPartners(0)

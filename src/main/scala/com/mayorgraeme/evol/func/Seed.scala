@@ -10,13 +10,17 @@ import com.mayorgraeme.evol.enums.LocationType._
 import java.util.UUID
 import scala.collection.immutable.Queue
 
-case class Seed(species: Int, maxAge:Int, sproutTime:Int, size:Int, seedRadius:Int, spermRadius: Int, gender: Char, allowedLocationTypes: Set[LocationType], chanceOfPropogation: Int, chanceOfBreeding: Int, waterNeed:Int, parents: Queue[Plant]) extends Inhabitant {
+case class Seed(species: String, maxAge:Int, sproutTime:Int, size:Int, seedRadius:Int, spermRadius: Int, gender: Char, allowedLocationTypes: Set[LocationType], chanceOfPropogation: Int, chanceOfBreeding: Int, waterNeed:Int, parents: Queue[Plant]) extends Inhabitant {
     var currentAge:Int = 0    
     val uuid = UUID.randomUUID.getMostSignificantBits
     
     override def getActorData(): ActorData = {
-      new PlantData(uuid, "seed", gender, maxAge, currentAge, sproutTime, size, seedRadius, spermRadius, chanceOfPropogation, chanceOfBreeding, waterNeed)
+      new PlantData(uuid, species, "seed", gender, maxAge, currentAge, sproutTime, size, seedRadius, spermRadius, chanceOfPropogation, chanceOfBreeding, waterNeed)
     }
+    
+    override def canBreed(that: Inhabitant): Boolean = false
+    
+    override def withUpdatedSpecies(newSpecies: String): Inhabitant = new Seed(newSpecies, maxAge, sproutTime, size, seedRadius, spermRadius, gender, allowedLocationTypes, chanceOfPropogation, chanceOfBreeding, waterNeed, parents)
   
     override def transformWorld(world: World, locationInformation: LocationInformation): World = {
       currentAge = currentAge + 1

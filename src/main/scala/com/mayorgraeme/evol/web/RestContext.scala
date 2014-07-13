@@ -6,13 +6,17 @@ import com.mayorgraeme.evol.func.EvolveFunc._
 import com.mayorgraeme.evol.func._
 import com.mayorgraeme.evol.func.Seed
 import com.mayorgraeme.evol.enums.LocationType._
+import scala.collection.immutable.Queue
 import scala.util.Random
 
 object RestContext {
   val lock: Object = new Object
   val rand = new Random
     
-  var world: World = fillWithRandom(EvolveFunc.world, Seed(10, 3, 1, 2, 4, {if(rand.nextInt(2) == 1) 'M' else 'F' }, Set(SAND), 15, 25, 60));
+  var world: World = {
+    val dasUberParent = Plant(1, 10, 3, 1, 2, 4, {if(rand.nextInt(2) == 1) 'M' else 'F' }, Set(SAND), 15, 25, 60, Queue[Plant]())
+    fillWithRandom(EvolveFunc.world, Seed(1, 10, 3, 1, 2, 4, {if(rand.nextInt(2) == 1) 'M' else 'F' }, Set(SAND), 15, 25, 60, Queue[Plant](dasUberParent)));
+  }
   
   def updateWorld(newWorld: World) = {
     lock.synchronized {

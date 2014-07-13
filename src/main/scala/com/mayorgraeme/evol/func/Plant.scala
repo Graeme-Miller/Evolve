@@ -9,21 +9,26 @@ import com.mayorgraeme.evol.data.java.PlantData
 import com.mayorgraeme.evol.data.java.ActorData
 import com.mayorgraeme.evol.enums.LocationType._
 import java.util.UUID
+import scala.collection.immutable.Queue
 import scala.util.Random
 import com.mayorgraeme.evol.util.SexUtil._
+import com.mayorgraeme.evol.util.BoundedParentQueue._
 
 
-case class Plant(maxAge:Int, sproutTime:Int, size:Int, seedRadius:Int, spermRadius: Int, gender: Char, allowedLocationTypes: Set[LocationType], chanceOfPropogation: Int, chanceOfBreeding: Int, waterNeed:Int) extends Inhabitant {
+case class Plant(species: Int, maxAge:Int, sproutTime:Int, size:Int, seedRadius:Int, spermRadius: Int, gender: Char, allowedLocationTypes: Set[LocationType], chanceOfPropogation: Int, chanceOfBreeding: Int, waterNeed:Int, parents: Queue[Plant]) extends Inhabitant {
   val uuid = UUID.randomUUID.getMostSignificantBits
   var currentAge = sproutTime
   var currentSize: Double = 1
   val rand = new Random()
   
   val WATER_PERCENTAGE_SUFFER = 20
+  val NUM_PARENTS = 20
     
   override def getActorData(): ActorData = {
     new PlantData(uuid, "plant", gender, maxAge, currentAge, sproutTime, size, seedRadius, spermRadius, chanceOfPropogation, chanceOfBreeding, waterNeed)
   }
+  
+  def canBreed(plantOne: Plant, plantTwo: Plant): Boolean = plantOne.gender != plantTwo.gender && plantOne.species == plantTwo.species
   
   def breedPlants(plantOne: Plant, plantTwo: Plant): Seed = {    
     val childChanceOfPropogation = geneticTransformation(plantOne.chanceOfPropogation, plantTwo.chanceOfPropogation)
@@ -32,8 +37,13 @@ case class Plant(maxAge:Int, sproutTime:Int, size:Int, seedRadius:Int, spermRadi
     val childMaxAge = Math.min(waterNeed, geneticTransformation(plantOne.maxAge, plantTwo.maxAge)) //remove this min, shouldnt need to constrain age
     
     //println("BREED: MaxAge", childMaxAge, "ChanceOfBreeding", childChanceOfBreeding,  "ChanceOfPropagation", childChanceOfPropogation)
+   
+    val newParents = parents.add(plantOne, NUM_PARENTS).add(plantTwo, NUM_PARENTS)
+  
     
-    new Seed(childMaxAge, sproutTime, size, seedRadius, spermRadius, {if(rand.nextInt(2) == 1) 'M' else 'F' }, allowedLocationTypes, childChanceOfPropogation, childChanceOfBreeding, waterNeed)
+    println("G1",newParents.size)
+    
+    new Seed(species, childMaxAge, sproutTime, size, seedRadius, spermRadius, {if(rand.nextInt(2) == 1) 'M' else 'F' }, allowedLocationTypes, childChanceOfPropogation, childChanceOfBreeding, waterNeed, newParents)
   }
   
   def geneticTransformation(first: Int, second: Int): Int = {
@@ -56,7 +66,7 @@ case class Plant(maxAge:Int, sproutTime:Int, size:Int, seedRadius:Int, spermRadi
         
       if(!spacesWithoutPlants.isEmpty){
         val space = spacesWithoutPlants(rand.nextInt(spacesWithoutPlants.size))
-        addToWorld(world, space.x, space.y, new Seed(maxAge, sproutTime, size, seedRadius, spermRadius, gender, allowedLocationTypes, chanceOfPropogation, chanceOfBreeding, waterNeed))
+        addToWorld(world, space.x, space.y, new Seed(species, maxAge, sproutTime, size, seedRadius, spermRadius, gender, allowedLocationTypes, chanceOfPropogation, chanceOfBreeding, waterNeed, parents))
       } else {
         world
       }
@@ -69,10 +79,10 @@ case class Plant(maxAge:Int, sproutTime:Int, size:Int, seedRadius:Int, spermRadi
       val sexPartners: Seq[Plant] = {
         for{inhabitants <- locsInRadius
             inhabitant <- inhabitants.inhabitants                                               
-        } yield (inhabitant)}.collect{case plant: Plant if plant.gender == getOpositeSex(gender) =>  plant}
+        } yield (inhabitant)}.toStream.collect{case plant: Plant if(canBreed(this, plant)) =>  plant}
                 
       if(!sexPartners.isEmpty && !freeSpaces.isEmpty){
-        val sexPartner = sexPartners(rand.nextInt(sexPartners.size))
+        val sexPartner = sexPartners(0)
         val child = breedPlants(sexPartner, this)
         
         val freeSpace = freeSpaces(rand.nextInt(freeSpaces.size))

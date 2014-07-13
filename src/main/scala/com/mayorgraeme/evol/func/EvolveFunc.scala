@@ -145,17 +145,8 @@ object EvolveFunc {
     
     //gets all inhabitants, creates a map of species to InhabLocation
     //TODO: groupby?
-    def extractSpecies: Map[String,Set[InhabitantLocation]] = {
-      val map = HashMap[String, Set[InhabitantLocation]]()
-      getAllInhab(worldParameter).foldLeft(map){ (foldMap, inhabitantLocation) =>
-        val spec = inhabitantLocation._1.species
-        if(foldMap.contains(spec)){
-          map.updated(spec, foldMap(spec) + inhabitantLocation) //add to map
-        } else{
-          map + ((spec, Set(inhabitantLocation)))
-        }
-      }           
-    }
+    def extractSpecies: Map[String,Seq[InhabitantLocation]] = getAllInhab(worldParameter).groupBy[String](_._1.species)       
+    
     
     //TODO: add parents
     def splitPartners(inhabLoc: InhabitantLocation, potentialPartners: Seq[InhabitantLocation]): (Seq[InhabitantLocation], Seq[InhabitantLocation]) = {
@@ -163,7 +154,7 @@ object EvolveFunc {
     }
     
     //TODO: This is worong, need to map and look at more than imediate node (boy girl problem)
-    def splitIntoBreedableSets(initialSet: Set[InhabitantLocation]): Set[Set[InhabitantLocation]] = {
+    def splitIntoBreedableSets(initialSet: Seq[InhabitantLocation]): Set[Set[InhabitantLocation]] = {
       var unseenInhab = initialSet.toVector
       var setOfSets = Set[Set[InhabitantLocation]]()
       

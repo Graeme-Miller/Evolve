@@ -11,24 +11,34 @@ import java.util.UUID
 import scala.collection.immutable.Queue
 
 case class Seed(species: String, maxAge:Int, sproutTime:Int, size:Int, seedRadius:Int, spermRadius: Int, gender: Char, allowedLocationTypes: Set[LocationType], chanceOfPropogation: Int, chanceOfBreeding: Int, waterNeed:Int, parents: Queue[Plant]) extends Inhabitant {
-    var currentAge:Int = 0    
-    val uuid = UUID.randomUUID.getMostSignificantBits
+  var currentAge:Int = 0    
+  val uuid = UUID.randomUUID.getMostSignificantBits
     
-    override def getActorData(): ActorData = {
-      new PlantData(uuid, species, "seed", gender, maxAge, currentAge, sproutTime, size, seedRadius, spermRadius, chanceOfPropogation, chanceOfBreeding, waterNeed)
-    }
+  override def getActorData(): ActorData = {
+    new PlantData(uuid, species, "seed", gender, maxAge, currentAge, sproutTime, size, seedRadius, spermRadius, chanceOfPropogation, chanceOfBreeding, waterNeed)
+  }
     
-    override def canBreed(that: Inhabitant): Boolean = false
-    
-    override def withUpdatedSpecies(newSpecies: String): Inhabitant = new Seed(newSpecies, maxAge, sproutTime, size, seedRadius, spermRadius, gender, allowedLocationTypes, chanceOfPropogation, chanceOfBreeding, waterNeed, parents)
+  override def toString = "S"+gender
+  override def hashCode = uuid.toInt
+
   
-    override def transformWorld(world: World, locationInformation: LocationInformation): World = {
-      currentAge = currentAge + 1
-      //println(currentAge,sproutTime, maxAge)
-      if(currentAge>= (sproutTime)){
-        replaceInWorld(world, locationInformation.x, locationInformation.y, this, new Plant(species, maxAge, sproutTime, size, seedRadius, spermRadius, gender, allowedLocationTypes, chanceOfPropogation, chanceOfBreeding, waterNeed, parents))
-      }else {
-        world
-      }
+  override def canBreed(other: Inhabitant): Boolean = {
+    other match {
+      case otherSeed: Seed => this.gender != otherSeed.gender && this.species == otherSeed.species 
+        case otherSeed: Plant => this.gender != otherSeed.gender && this.species == otherSeed.species 
+      case _ => false  
+    }      
+  }
+    
+  override def withUpdatedSpecies(newSpecies: String): Inhabitant = new Seed(newSpecies, maxAge, sproutTime, size, seedRadius, spermRadius, gender, allowedLocationTypes, chanceOfPropogation, chanceOfBreeding, waterNeed, parents)
+  
+  override def transformWorld(world: World, locationInformation: LocationInformation): World = {
+    currentAge = currentAge + 1
+    println(currentAge,sproutTime, maxAge)
+    if(currentAge>= (sproutTime)){
+      replaceInWorld(world, locationInformation.x, locationInformation.y, this, new Plant(species, maxAge, sproutTime, size, seedRadius, spermRadius, gender, allowedLocationTypes, chanceOfPropogation, chanceOfBreeding, waterNeed, parents))
+    }else {
+      world
     }
   }
+}

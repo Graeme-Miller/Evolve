@@ -11,13 +11,14 @@ import com.mayorgraeme.evol.enums.LocationType._
 import java.util.ArrayList
 import java.util.UUID
 import scala.collection.immutable.HashMap
+import scala.collection.immutable.HashSet
 import scala.util.Random
 
 object EvolveFunc {
   
   val maxX = 40
   val maxY = 60
-  val startInhabitants = 30
+  val startInhabitants = 50
   
   val MAX_DIST_TO_WATER = 20  
   
@@ -143,36 +144,56 @@ object EvolveFunc {
   def updateSpecies(worldParameter: World): World = {
     
     
-    //gets all inhabitants, creates a map of species to InhabLocation
-    //TODO: groupby?
     def extractSpecies: Map[String,Seq[InhabitantLocation]] = getAllInhab(worldParameter).groupBy[String](_._1.species)       
     
     
     //TODO: add parents
-    def splitPartners(inhabLoc: InhabitantLocation, potentialPartners: Seq[InhabitantLocation]): (Seq[InhabitantLocation], Seq[InhabitantLocation]) = {
-      potentialPartners.partition(x => inhabLoc._1.canBreed(x._1))                
+    def splitPartners(inhabLoc: InhabitantLocation, potentialPartners: Set[InhabitantLocation]): (Set[InhabitantLocation], Set[InhabitantLocation]) = {
+      potentialPartners.partition(x => {
+          //  println("inhabLoc._1", inhabLoc._1, "with", x._1, inhabLoc._1.canBreed(x._1))
+          inhabLoc._1.canBreed(x._1)
+        })
+    }
+    
+    def dfsSearch(node: InhabitantLocation, seenNodes: Set[InhabitantLocation], unseenNodes: Set[InhabitantLocation]): Set[InhabitantLocation] = {
+      val newSeenNodes: Set[InhabitantLocation] = seenNodes + node
+      val newUnseenNodes: Set[InhabitantLocation] = unseenNodes - node
+      val (breed, nonBreed) = splitPartners(node, newUnseenNodes)
+      println("G1 --------")
+      println("G1 OLD", node._1, seenNodes.map(_._1), unseenNodes.map(_._1))
+      println("G1 NEW", node._1, newSeenNodes.map(_._1), newUnseenNodes.map(_._1))
+      println("G1 breed", node._1, breed.map(_._1))
+      println("G1 --------")
+      breed.foldLeft(newSeenNodes){(x, y) => x ++ dfsSearch(y, newSeenNodes, nonBreed)}
     }
     
     //TODO: This is worong, need to map and look at more than imediate node (boy girl problem)
     def splitIntoBreedableSets(initialSet: Seq[InhabitantLocation]): Set[Set[InhabitantLocation]] = {
       var unseenInhab = initialSet.toVector
       var setOfSets = Set[Set[InhabitantLocation]]()
-      
+     
       while(!unseenInhab.isEmpty){
+        
         val inhab = unseenInhab.head
         unseenInhab = unseenInhab.tail
         
-        val (breed, nonBreed) = splitPartners(inhab, unseenInhab)
-        setOfSets = setOfSets + (breed.toSet+inhab)
-        unseenInhab = nonBreed.toVector       
+        val reachable = dfsSearch(inhab, Set(), unseenInhab.toSet)
+        setOfSets = setOfSets + reachable.toSet
+        unseenInhab = unseenInhab filterNot reachable.toSet
+        
+             println("G1 reachable from",inhab._1, reachable.map(_._1))
       }
       
-      setOfSets
+      println("G1 setOfSets",setOfSets.map(_.map(_._1)))
+      setOfSets      
     }
     
     var variableWorld = worldParameter;
+    println("G1 extractSpecies.size",extractSpecies.size)
     for((species, speciesSet) <- extractSpecies){
+      
       val breedableSets = splitIntoBreedableSets(speciesSet)
+      println("G1 breedableSets.size",breedableSets.size)
       if(breedableSets.size > 1){
         for{(inhabLocationSet, index) <- breedableSets.zipWithIndex
             inhabLoc <- inhabLocationSet}{
@@ -186,6 +207,7 @@ object EvolveFunc {
   }
   
   def transformWorld(worldParameter: World): World = {
+    println("G1 transformWorld")
     val worldFlat: Seq[LocationInformation] = worldParameter.flatten
     updateSpecies{worldFlat.foldLeft(worldParameter){(world: World, locationInformation: LocationInformation) => {   
           //println(locationInformation.inhabitants.size)

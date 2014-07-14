@@ -28,11 +28,14 @@ case class Plant(species: String, maxAge:Int, sproutTime:Int, size:Int, seedRadi
     new PlantData(uuid, species, "plant", gender, maxAge, currentAge, sproutTime, size, seedRadius, spermRadius, chanceOfPropogation, chanceOfBreeding, waterNeed)
   }
   
+  override def hashCode = uuid.toInt
+  override def toString = "P"+gender
   override def withUpdatedSpecies(newSpecies: String): Inhabitant = new Plant(newSpecies, maxAge, sproutTime, size, seedRadius, spermRadius, gender, allowedLocationTypes, chanceOfPropogation, chanceOfBreeding, waterNeed, parents)
   
   override def canBreed(other: Inhabitant): Boolean = {
     other match {
       case otherPlant: Plant => this.gender != otherPlant.gender && this.species == otherPlant.species 
+        case otherSeed: Seed => this.gender != otherSeed.gender && this.species == otherSeed.species 
       case _ => false  
     }      
   }

@@ -17,8 +17,11 @@ class LocationGenerator(x: Int, y:Int) {
 
   //River Config
   val minNoOfRivers = 1
-  val maxNoOfRivers = 1
+  val maxNoOfRivers = 3
   val percentChanceChangeDirection = 10
+  val percentChanceChangeSize = 33
+  val minRiverSize = 2
+  val maxRiverSize = 4
   
   val map: Seq[Seq[LocationType]] = getMap
   
@@ -52,11 +55,34 @@ class LocationGenerator(x: Int, y:Int) {
       var curX = r.nextInt(x)
       var curY = 0;
       var direction = 0;
+      var size = getInBetween(minRiverSize, maxRiverSize);
     
       while(curY != y){
-        map(Math.max(curX-1, 0))(curY) = WATER;
+        
+        if(r.nextInt(100) <= percentChanceChangeSize){
+          size = getInBetween(minRiverSize, maxRiverSize);
+        }
+        
         map(curX)(curY) = WATER;
-        map(Math.min(curX+1, x-1))(curY) = WATER;
+        val amountLeft = size - 1
+        var amountUp: Int = Math.floor(amountLeft/2).toInt
+        var amountDown: Int = Math.floor(amountLeft/2).toInt
+        
+        if(amountLeft - amountUp - amountDown > 0){
+          if(r.nextInt(2) == 1){
+            amountUp = amountUp + 1
+          }else {
+            amountDown = amountDown + 1            
+          }            
+        }
+        for (amount <- 1 to amountUp) {
+          map(Math.max(curX-amount, 0))(curY) = WATER;
+        }
+        for (amount <- 1 to amountDown) {
+          map(Math.min(curX+amount, x-1))(curY) = WATER;
+        }
+        
+        
     
         if(r.nextInt(100) <= percentChanceChangeDirection){
           direction = r.nextInt(3)

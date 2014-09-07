@@ -218,16 +218,25 @@ object EvolveFunc {
     variableWorld
   }
   
+  var count = 0;
   def transformWorld(worldParameter: World): World = {
     println("RUN-"+updateSpeciesCount+" transformWorld")
     val worldFlat: Seq[LocationInformation] = worldParameter.flatten
-    updateSpecies{worldFlat.foldLeft(worldParameter){(world: World, locationInformation: LocationInformation) => {   
-          //println(locationInformation.inhabitants.size)
-          locationInformation.inhabitants.foldLeft(world){(world: World, inhabitant: Inhabitant) =>
-            inhabitant.transformWorld(world, locationInformation)
-          }
+    
+    val valNewWorld =  worldFlat.foldLeft(worldParameter){(world: World, locationInformation: LocationInformation) => {   
+        //println(locationInformation.inhabitants.size)
+        locationInformation.inhabitants.foldLeft(world){(world: World, inhabitant: Inhabitant) =>
+          inhabitant.transformWorld(world, locationInformation)
         }
       }
+    }
+    count = count + 1
+    
+    if(count > 20){
+      count = 0
+      updateSpecies(valNewWorld)
+    }else{
+      valNewWorld
     }
   }
 }

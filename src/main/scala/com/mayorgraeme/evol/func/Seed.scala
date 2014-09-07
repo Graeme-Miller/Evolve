@@ -9,6 +9,7 @@ import com.mayorgraeme.evol.data.java.ActorData
 import com.mayorgraeme.evol.enums.LocationType._
 import java.util.UUID
 import scala.collection.immutable.Queue
+import com.mayorgraeme.evol.util.GeneticUtil._
 
 case class Seed(species: String, maxAge:Int, sproutTime:Int, size:Int, seedRadius:Int, spermRadius: Int, gender: Char, allowedLocationTypes: Set[LocationType], chanceOfPropogation: Int, chanceOfBreeding: Int, waterNeed:Int, parents: Queue[Plant]) extends Inhabitant {
   var currentAge:Int = 0    
@@ -22,10 +23,24 @@ case class Seed(species: String, maxAge:Int, sproutTime:Int, size:Int, seedRadiu
   override def hashCode = uuid.toInt
 
   
+  def similarEnough(seedOne: Seed, seedTwo:Seed): Boolean = {
+    geneticSimilarity(seedOne.waterNeed, seedTwo.waterNeed) && 
+    geneticSimilarity(seedOne.maxAge, seedTwo.maxAge) && 
+    geneticSimilarity(seedOne.chanceOfPropogation, seedTwo.chanceOfPropogation)  && 
+    geneticSimilarity(seedOne.chanceOfBreeding, seedTwo.chanceOfBreeding) 
+  }
+  
+  def similarEnough(seed:Seed, plant: Plant): Boolean = {
+    geneticSimilarity(plant.waterNeed, seed.waterNeed) && 
+    geneticSimilarity(plant.maxAge, seed.maxAge) && 
+    geneticSimilarity(plant.chanceOfPropogation, seed.chanceOfPropogation)  && 
+    geneticSimilarity(plant.chanceOfBreeding, seed.chanceOfBreeding) 
+  }
+  
   override def canBreed(other: Inhabitant): Boolean = {
     other match {
-      case otherSeed: Seed => this.gender != otherSeed.gender && this.species == otherSeed.species 
-      case otherSeed: Plant => this.gender != otherSeed.gender && this.species == otherSeed.species 
+      case otherSeed: Seed => this.gender != otherSeed.gender && similarEnough(this, otherSeed) && !this.parents.intersect(otherSeed.parents).isEmpty
+      case otherPlant: Plant => this.gender != otherPlant.gender && similarEnough(this, otherPlant) && !this.parents.intersect(otherPlant.parents).isEmpty
       case _ => false  
     }      
   }

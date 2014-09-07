@@ -13,6 +13,7 @@ import scala.collection.immutable.Queue
 import scala.util.Random
 import com.mayorgraeme.evol.util.SexUtil._
 import com.mayorgraeme.evol.util.BoundedParentQueue._
+import com.mayorgraeme.evol.util.GeneticUtil._
 
 
 case class Plant(species: String, maxAge:Int, sproutTime:Int, size:Int, seedRadius:Int, spermRadius: Int, gender: Char, allowedLocationTypes: Set[LocationType], chanceOfPropogation: Int, chanceOfBreeding: Int, waterNeed:Int, parents: Queue[Plant]) extends Inhabitant {
@@ -22,7 +23,7 @@ case class Plant(species: String, maxAge:Int, sproutTime:Int, size:Int, seedRadi
   val rand = new Random()
   
   val WATER_PERCENTAGE_SUFFER = 20
-  val NUM_PARENTS = 10
+  val NUM_PARENTS = 50
     
   override def getActorData(): ActorData = {
     new PlantData(uuid, species, "plant", gender, maxAge, currentAge, sproutTime, size, seedRadius, spermRadius, chanceOfPropogation, chanceOfBreeding, waterNeed)
@@ -31,11 +32,25 @@ case class Plant(species: String, maxAge:Int, sproutTime:Int, size:Int, seedRadi
   override def hashCode = uuid.toInt
   override def toString = "P"+gender+"-"+uuid
   override def withUpdatedSpecies(newSpecies: String): Inhabitant = new Plant(newSpecies, maxAge, sproutTime, size, seedRadius, spermRadius, gender, allowedLocationTypes, chanceOfPropogation, chanceOfBreeding, waterNeed, parents)
+
+  def similarEnough(plantOne: Plant, plantTwo:Plant): Boolean = {
+    geneticSimilarity(plantOne.waterNeed, plantTwo.waterNeed) && 
+    geneticSimilarity(plantOne.maxAge, plantTwo.maxAge) && 
+    geneticSimilarity(plantOne.chanceOfPropogation, plantTwo.chanceOfPropogation)  && 
+    geneticSimilarity(plantOne.chanceOfBreeding, plantTwo.chanceOfBreeding) 
+  }
+  
+  def similarEnough(plant: Plant, seed:Seed): Boolean = {
+    geneticSimilarity(plant.waterNeed, seed.waterNeed) && 
+    geneticSimilarity(plant.maxAge, seed.maxAge) && 
+    geneticSimilarity(plant.chanceOfPropogation, seed.chanceOfPropogation)  && 
+    geneticSimilarity(plant.chanceOfBreeding, seed.chanceOfBreeding) 
+  }
   
   override def canBreed(other: Inhabitant): Boolean = {
     other match {
-      case otherPlant: Plant => this.gender != otherPlant.gender && this.species == otherPlant.species && !this.parents.intersect(otherPlant.parents).isEmpty
-      case otherSeed: Seed => this.gender != otherSeed.gender && this.species == otherSeed.species && !this.parents.intersect(otherSeed.parents).isEmpty
+      case otherPlant: Plant => this.gender != otherPlant.gender && similarEnough(this, otherPlant) && !this.parents.intersect(otherPlant.parents).isEmpty
+      case otherSeed: Seed => this.gender != otherSeed.gender && similarEnough(this, otherSeed) && !this.parents.intersect(otherSeed.parents).isEmpty
       case _ => false  
     }      
   }
@@ -49,26 +64,12 @@ case class Plant(species: String, maxAge:Int, sproutTime:Int, size:Int, seedRadi
     //println("BREED: MaxAge", childMaxAge, "ChanceOfBreeding", childChanceOfBreeding,  "ChanceOfPropagation", childChanceOfPropogation)
    
     val newParents = parents.add(plantOne, NUM_PARENTS).add(plantTwo, NUM_PARENTS)
-    
-  
-    
-    println("G1",newParents.size)
+              
     
     new Seed(species, childMaxAge, sproutTime, size, seedRadius, spermRadius, {if(rand.nextInt(2) == 1) 'M' else 'F' }, allowedLocationTypes, childChanceOfPropogation, childChanceOfBreeding, waterNeed, newParents)
   }
   
-  def geneticTransformation(first: Int, second: Int): Int = {
-    val possibleMin: Int = Math.min(first, second)
-    val possibleMax: Int = Math.max(first, second)
-    
-    val minDelta = possibleMin * 0.1
-    val maxDelta = possibleMax * 0.1
-    
-    val min: Int = Math.floor(possibleMin - minDelta).toInt
-    val max: Int = Math.ceil(possibleMax + maxDelta).toInt
-    
-    rand.nextInt(max-min+1) + min
-  }
+  
   
   override def transformWorld(world: World, locationInformation: LocationInformation): World = {
     def propagate = {

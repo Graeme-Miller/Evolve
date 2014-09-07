@@ -12,6 +12,7 @@ import java.util.ArrayList
 import java.util.UUID
 import scala.collection.immutable.HashMap
 import scala.collection.immutable.HashSet
+import scala.collection.mutable.Queue
 import scala.util.Random
 
 object EvolveFunc {
@@ -118,7 +119,7 @@ object EvolveFunc {
     def getActorData(): ActorData = null
     def canBreed(inhabitant: Inhabitant): Boolean
     def species: String
-    def withUpdatedSpecies(species: String): Inhabitant
+    def withUpdatedSpecies(species: String): Inhabitant    
   }
  
   
@@ -141,6 +142,7 @@ object EvolveFunc {
     
   type InhabitantLocation = (Inhabitant, LocationInformation)
   
+  var updateSpeciesCount = 0;
   def updateSpecies(worldParameter: World): World = {
     
     
@@ -155,16 +157,22 @@ object EvolveFunc {
         })
     }
     
-    def dfsSearch(node: InhabitantLocation, seenNodes: Set[InhabitantLocation], unseenNodes: Set[InhabitantLocation]): Set[InhabitantLocation] = {
-      val newSeenNodes: Set[InhabitantLocation] = seenNodes + node
-      val newUnseenNodes: Set[InhabitantLocation] = unseenNodes - node
-      val (breed, nonBreed) = splitPartners(node, newUnseenNodes)
-      println("G1 --------")
-      println("G1 OLD", node._1, seenNodes.map(_._1), unseenNodes.map(_._1))
-      println("G1 NEW", node._1, newSeenNodes.map(_._1), newUnseenNodes.map(_._1))
-      println("G1 breed", node._1, breed.map(_._1))
-      println("G1 --------")
-      breed.foldLeft(newSeenNodes){(x, y) => x ++ dfsSearch(y, newSeenNodes, nonBreed)}
+    def dfsSearch(node: InhabitantLocation, unseenNodes: Set[InhabitantLocation]): Set[InhabitantLocation] = {
+      val queue = Queue(node)
+      
+      var returnSet = Set[InhabitantLocation]()
+      var nodesToCheck = unseenNodes
+      
+      while(!queue.isEmpty && !nodesToCheck.isEmpty){
+        val node = queue.dequeue
+        val (breed, nonBreed) = splitPartners(node, nodesToCheck)
+        
+        nodesToCheck = nonBreed
+        returnSet  = returnSet ++ breed
+        breed.foreach(queue.enqueue(_))
+      }
+      
+      returnSet
     }
     
     //TODO: This is worong, need to map and look at more than imediate node (boy girl problem)
@@ -177,28 +185,32 @@ object EvolveFunc {
         val inhab = unseenInhab.head
         unseenInhab = unseenInhab.tail
         
-        val reachable = dfsSearch(inhab, Set(), unseenInhab.toSet)
+        val reachable = dfsSearch(inhab, unseenInhab.toSet)
         setOfSets = setOfSets + reachable.toSet
+        println("RUN-"+updateSpeciesCount+" BEFORE "+  unseenInhab.size)
         unseenInhab = unseenInhab filterNot reachable.toSet
-        
-             println("G1 reachable from",inhab._1, reachable.map(_._1))
+        println("RUN-"+updateSpeciesCount+" AFTER "+  unseenInhab.size)
+        println("RUN-"+updateSpeciesCount+" reachable from",inhab._1, reachable.map(_._1))
       }
       
-      println("G1 setOfSets",setOfSets.map(_.map(_._1)))
+      println("RUN-"+updateSpeciesCount+" setOfSets",setOfSets.map(_.map(_._1)))
       setOfSets      
     }
     
+    
+    updateSpeciesCount = updateSpeciesCount + 1;
+    
     var variableWorld = worldParameter;
-    println("G1 extractSpecies.size",extractSpecies.size)
+    println("RUN-"+updateSpeciesCount+" extractSpecies.size",extractSpecies.size)
     for((species, speciesSet) <- extractSpecies){
       
       val breedableSets = splitIntoBreedableSets(speciesSet)
-      println("G1 breedableSets.size",breedableSets.size)
+      println("RUN-"+updateSpeciesCount+" breedableSets.size",breedableSets.size)
       if(breedableSets.size > 1){
         for{(inhabLocationSet, index) <- breedableSets.zipWithIndex
             inhabLoc <- inhabLocationSet}{
-          val(inhab, loc) = inhabLoc
-          variableWorld = replaceInWorld(variableWorld, loc.x, loc.y, inhab, inhab.withUpdatedSpecies(inhab.species+index.toString))          
+          val(inhab, loc) = inhabLoc         
+          variableWorld = replaceInWorld(variableWorld, loc.x, loc.y, inhab, inhab.withUpdatedSpecies(inhab.species+index.toString))                   
         }
       }      
     }
@@ -207,7 +219,7 @@ object EvolveFunc {
   }
   
   def transformWorld(worldParameter: World): World = {
-    println("G1 transformWorld")
+    println("RUN-"+updateSpeciesCount+" transformWorld")
     val worldFlat: Seq[LocationInformation] = worldParameter.flatten
     updateSpecies{worldFlat.foldLeft(worldParameter){(world: World, locationInformation: LocationInformation) => {   
           //println(locationInformation.inhabitants.size)

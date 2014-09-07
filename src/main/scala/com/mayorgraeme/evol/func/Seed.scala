@@ -18,14 +18,14 @@ case class Seed(species: String, maxAge:Int, sproutTime:Int, size:Int, seedRadiu
     new PlantData(uuid, species, "seed", gender, maxAge, currentAge, sproutTime, size, seedRadius, spermRadius, chanceOfPropogation, chanceOfBreeding, waterNeed)
   }
     
-  override def toString = "S"+gender
+  override def toString = "S"+gender+"-"+uuid
   override def hashCode = uuid.toInt
 
   
   override def canBreed(other: Inhabitant): Boolean = {
     other match {
       case otherSeed: Seed => this.gender != otherSeed.gender && this.species == otherSeed.species 
-        case otherSeed: Plant => this.gender != otherSeed.gender && this.species == otherSeed.species 
+      case otherSeed: Plant => this.gender != otherSeed.gender && this.species == otherSeed.species 
       case _ => false  
     }      
   }

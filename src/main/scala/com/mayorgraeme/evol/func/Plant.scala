@@ -22,20 +22,20 @@ case class Plant(species: String, maxAge:Int, sproutTime:Int, size:Int, seedRadi
   val rand = new Random()
   
   val WATER_PERCENTAGE_SUFFER = 20
-  val NUM_PARENTS = 20
+  val NUM_PARENTS = 10
     
   override def getActorData(): ActorData = {
     new PlantData(uuid, species, "plant", gender, maxAge, currentAge, sproutTime, size, seedRadius, spermRadius, chanceOfPropogation, chanceOfBreeding, waterNeed)
   }
   
   override def hashCode = uuid.toInt
-  override def toString = "P"+gender
+  override def toString = "P"+gender+"-"+uuid
   override def withUpdatedSpecies(newSpecies: String): Inhabitant = new Plant(newSpecies, maxAge, sproutTime, size, seedRadius, spermRadius, gender, allowedLocationTypes, chanceOfPropogation, chanceOfBreeding, waterNeed, parents)
   
   override def canBreed(other: Inhabitant): Boolean = {
     other match {
-      case otherPlant: Plant => this.gender != otherPlant.gender && this.species == otherPlant.species 
-        case otherSeed: Seed => this.gender != otherSeed.gender && this.species == otherSeed.species 
+      case otherPlant: Plant => this.gender != otherPlant.gender && this.species == otherPlant.species && !this.parents.intersect(otherPlant.parents).isEmpty
+      case otherSeed: Seed => this.gender != otherSeed.gender && this.species == otherSeed.species && !this.parents.intersect(otherSeed.parents).isEmpty
       case _ => false  
     }      
   }
@@ -45,10 +45,11 @@ case class Plant(species: String, maxAge:Int, sproutTime:Int, size:Int, seedRadi
     val childChanceOfBreeding = geneticTransformation(plantOne.chanceOfBreeding, plantTwo.chanceOfBreeding)
     val waterNeed = geneticTransformation(plantOne.waterNeed, plantTwo.waterNeed)
     val childMaxAge = Math.min(waterNeed, geneticTransformation(plantOne.maxAge, plantTwo.maxAge)) //remove this min, shouldnt need to constrain age
-    
+  
     //println("BREED: MaxAge", childMaxAge, "ChanceOfBreeding", childChanceOfBreeding,  "ChanceOfPropagation", childChanceOfPropogation)
    
     val newParents = parents.add(plantOne, NUM_PARENTS).add(plantTwo, NUM_PARENTS)
+    
   
     
     println("G1",newParents.size)

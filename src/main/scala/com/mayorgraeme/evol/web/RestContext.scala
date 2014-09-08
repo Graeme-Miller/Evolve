@@ -3,6 +3,7 @@ package com.mayorgraeme.evol.web
 
 import com.mayorgraeme.evol.func.EvolveFunc
 import com.mayorgraeme.evol.func.EvolveFunc._
+import com.mayorgraeme.evol.func.SpecterOfDeath
 import com.mayorgraeme.evol.func._
 import com.mayorgraeme.evol.func.Seed
 import com.mayorgraeme.evol.enums.LocationType._
@@ -16,7 +17,9 @@ object RestContext {
   var world: World = {
     val dasUberParent1 = Queue[Plant](Plant("1", 10, 3, 1, 2, 4, {if(rand.nextInt(2) == 1) 'M' else 'F' }, Set(SAND), 15, 25, 60, Queue[Plant]()))
     val dasUberParent2 = Queue[Plant](Plant("2", 10, 3, 1, 2, 4, {if(rand.nextInt(2) == 1) 'M' else 'F' }, Set(SAND), 15, 25, 60, Queue[Plant]()))
-    fillWithRandom(EvolveFunc.world, Seed("1", 10, 3, 1, 2, 4, {if(rand.nextInt(2) == 1) 'M' else 'F' }, Set(SAND), 15, 25, 60, {if(rand.nextInt(2) == 1) dasUberParent1 else dasUberParent1 }));
+    val intermittentWorld = fillWithRandom(EvolveFunc.world, Seed("1", 10, 3, 1, 2, 4, {if(rand.nextInt(2) == 1) 'M' else 'F' }, Set(SAND), 15, 25, 60, {if(rand.nextInt(2) == 1) dasUberParent1 else dasUberParent1 }));
+    intermittentWorld
+    //fillWithRandom(intermittentWorld, {new SpecterOfDeath()})
   }
   
   def updateWorld(newWorld: World) = {

@@ -16,12 +16,12 @@ class LocationGenerator(x: Int, y:Int) {
   val percentChanceTree = 80
 
   //River Config
-  val minNoOfRivers = 1
-  val maxNoOfRivers = 3
-  val percentChanceChangeDirection = 10
-  val percentChanceChangeSize = 33
-  val minRiverSize = 2
-  val maxRiverSize = 4
+  val minNoOfRivers = 2
+  val maxNoOfRivers = 5
+  val percentChanceChangeDirection = 50
+  val percentChanceChangeSize = 30
+  val minRiverSize = 3
+  val maxRiverSize = 6
   
   val map: Seq[Seq[LocationType]] = getMap
   

@@ -100,6 +100,10 @@ object EvolveFunc {
   def addToWorld(world: World, x: Int, y: Int, inhabitant: Inhabitant): World = changeWorld(world, x, y, set => set + inhabitant)
   def subFromWorld(world: World, x: Int, y: Int, inhabitant: Inhabitant): World = changeWorld(world, x, y, set => set - inhabitant)
   def replaceInWorld(world: World, x: Int, y: Int, oldInhabitant: Inhabitant, newInhabitant: Inhabitant): World = changeWorld(world, x, y, set => {set - oldInhabitant + newInhabitant})
+  def moveInWorld(world: World, xFrom: Int, yFrom: Int, xTo: Int, yTo: Int, oldInhabitant: Inhabitant, newInhabitant: Inhabitant): World = {  
+    val intermittentWorld = changeWorld(world, xFrom, yFrom, set => {set - oldInhabitant})
+    changeWorld(intermittentWorld, xTo, yTo, set => {set + newInhabitant})
+  }
   
   
   
@@ -204,7 +208,7 @@ object EvolveFunc {
     println("RUN-"+updateSpeciesCount+" extractSpecies.size",extractSpecies.size)
     for((species, speciesSet) <- extractSpecies){
       
-      val breedableSets = splitIntoBreedableSets(speciesSet)
+      val breedableSets = splitIntoBreedableSets(speciesSet).toList.sortBy(_.size)
       println("RUN-"+updateSpeciesCount+" breedableSets.size",breedableSets.size)
       if(breedableSets.size > 1){
         for{(inhabLocationSet, index) <- breedableSets.zipWithIndex
@@ -222,10 +226,10 @@ object EvolveFunc {
   def transformWorld(worldParameter: World): World = {
     println("RUN-"+updateSpeciesCount+" transformWorld")
     val worldFlat: Seq[LocationInformation] = worldParameter.flatten
-    
-    val valNewWorld =  worldFlat.foldLeft(worldParameter){(world: World, locationInformation: LocationInformation) => {   
+
+    val valNewWorld =  rand.shuffle(worldFlat).foldLeft(worldParameter){(world: World, locationInformation: LocationInformation) => {   
         //println(locationInformation.inhabitants.size)
-        locationInformation.inhabitants.foldLeft(world){(world: World, inhabitant: Inhabitant) =>
+        rand.shuffle(locationInformation.inhabitants).foldLeft(world){(world: World, inhabitant: Inhabitant) =>
           inhabitant.transformWorld(world, locationInformation)
         }
       }

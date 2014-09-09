@@ -210,8 +210,8 @@ object EvolveFunc {
     println("RUN-"+updateSpeciesCount+" extractSpecies.size",extractSpecies.size)
     for((species, speciesSet) <- extractSpecies){
       
-      val breedableSets = splitIntoBreedableSets(speciesSet).toList.sortBy(_.size)
-      println("RUN-"+updateSpeciesCount+" breedableSets.size",breedableSets.size)
+      val breedableSets = splitIntoBreedableSets(speciesSet).toList.sortBy(_.size).reverse
+      println("RUNGM-"+breedableSets.map(_.size))
       if(breedableSets.size > 1){
         for{(inhabLocationSet, index) <- breedableSets.zipWithIndex
             inhabLoc <- inhabLocationSet}{

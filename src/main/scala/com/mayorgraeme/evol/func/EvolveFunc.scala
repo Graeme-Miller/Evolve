@@ -107,7 +107,9 @@ object EvolveFunc {
   
   
   
-  def fillWithRandom(world: World, createFunc: => Inhabitant): World= {
+  def fillWithRandom(world: World, createFunc: => Inhabitant): World= fillWithRandom(world, createFunc, startInhabitants)
+  
+  def fillWithRandom(world: World, createFunc: => Inhabitant, startInhabitants: Int): World= {
     
     Range(0, startInhabitants).foldLeft(world)((world: World, x:Int) => {
         val randX = rand.nextInt(maxX)

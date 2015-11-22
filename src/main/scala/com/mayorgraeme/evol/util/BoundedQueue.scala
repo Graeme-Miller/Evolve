@@ -2,12 +2,12 @@ package com.mayorgraeme.evol.util
 
 import scala.collection.immutable.Queue
 
-object BoundedParentQueue {
+object BoundedQueue {
   
-  class BoundedParentQueue[A](queue: Queue[A]) { 
+  class BoundedQueue[A](queue: Queue[A]) {
   
     def add(a: A, maxSize: Int): Queue[A] = {
-      var enqueued = queue.enqueue(a)
+      val enqueued = queue.enqueue(a)
       val overSize = enqueued.size - maxSize
       if (overSize > 0) {
         val range: Range = 0 until overSize
@@ -16,5 +16,5 @@ object BoundedParentQueue {
     }            
   }
   
-  implicit def queueToBoundedParentList[A](queue: Queue[A]) = new BoundedParentQueue[A](queue)
+  implicit def queueToBoundedParentList[A](queue: Queue[A]) = new BoundedQueue[A](queue)
 }

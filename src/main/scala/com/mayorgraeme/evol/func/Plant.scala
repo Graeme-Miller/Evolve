@@ -12,7 +12,7 @@ import java.util.UUID
 import scala.collection.immutable.Queue
 import scala.util.Random
 import com.mayorgraeme.evol.util.SexUtil._
-import com.mayorgraeme.evol.util.BoundedParentQueue._
+import com.mayorgraeme.evol.util.BoundedQueue._
 import com.mayorgraeme.evol.util.GeneticUtil._
 
 

@@ -29,4 +29,6 @@ class Ancestry (val ancestryQueue: Queue[Set[Inhabitant]], maxSize: Int) {
     new Ancestry(queueToReturn.add(Set(parentOne, parentTwo), maxSize), maxSize)
   }
 
+  override def toString: String = ancestryQueue.toString()
+
 }

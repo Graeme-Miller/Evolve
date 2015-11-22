@@ -35,8 +35,9 @@ class AncestryTest extends FlatSpec with Matchers {
     val newAncestry = ancestryOne.breed(ancestryTwo, inhabitantOne, inhabitantTwo)
 
     newAncestry.allAncestors.size should be(2)
-    newAncestry.ancestryQueue.size should be(1)
-    val newSet = newAncestry.ancestryQueue.apply(0)
+    newAncestry.ancestryQueue.size should be(3)
+    val newSet = newAncestry.ancestryQueue.last
+    print(newAncestry)
     newSet.size should be(2)
     assert(newSet.contains(inhabitantOne))
     assert(newSet.contains(inhabitantTwo))

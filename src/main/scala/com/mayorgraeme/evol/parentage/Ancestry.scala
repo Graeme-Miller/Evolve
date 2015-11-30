@@ -13,6 +13,7 @@ class Ancestry (val ancestryQueue: Queue[Set[Inhabitant]], maxSize: Int) {
 
   def areRelated(otherAncestry: Ancestry): Boolean = !otherAncestry.allAncestors.intersect(this.allAncestors).isEmpty
 
+  //Used incase the ancestry queue is less than max size
   def setOrEmpty(ancestry: Queue[Set[Inhabitant]], index:Integer): Set[Inhabitant] ={
     if(index < ancestry.size){
       ancestry.apply(index)
@@ -23,7 +24,7 @@ class Ancestry (val ancestryQueue: Queue[Set[Inhabitant]], maxSize: Int) {
 
   def breed(otherAncestry: Ancestry, parentOne: Inhabitant, parentTwo: Inhabitant): Ancestry = {
     var queueToReturn = Queue[Set[Inhabitant]]()
-    for (x <- 0 until maxSize) {
+    for (x <- 1 until maxSize) {
       queueToReturn = queueToReturn.add(setOrEmpty(this.ancestryQueue, x) union setOrEmpty(otherAncestry.ancestryQueue, x), maxSize)
     }
     new Ancestry(queueToReturn.add(Set(parentOne, parentTwo), maxSize), maxSize)

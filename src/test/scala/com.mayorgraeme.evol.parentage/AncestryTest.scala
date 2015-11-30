@@ -43,4 +43,29 @@ class AncestryTest extends FlatSpec with Matchers {
     assert(newSet.contains(inhabitantTwo))
   }
 
+  "An Ancestry" should " work only one parent " in {
+    val parent = new TestInhabitant
+
+    val emptyQueue =  Queue[Set[Inhabitant]]()
+    val fullQueue =  Queue(Set[Inhabitant](), Set[Inhabitant](), Set[Inhabitant](parent))
+    val ancestryOne = new Ancestry(fullQueue, 3)
+    val ancestryTwo = new Ancestry(emptyQueue, 3)
+
+    val inhabitantOne = new TestInhabitant
+    val inhabitantTwo = new TestInhabitant
+
+    ancestryOne.areRelated(ancestryTwo) should be(false)
+    val newAncestry = ancestryOne.breed(ancestryTwo, inhabitantOne, inhabitantTwo)
+
+    newAncestry.allAncestors.size should be(3)
+    newAncestry.ancestryQueue.size should be(3)
+    val directParents = newAncestry.ancestryQueue(2)
+    val grandparents = newAncestry.ancestryQueue(1)
+    directParents.size should be(2)
+    grandparents.size should be(1)
+    assert(directParents.contains(inhabitantOne))
+    assert(directParents.contains(inhabitantTwo))
+    assert(grandparents.contains(parent))
+  }
+
 }
